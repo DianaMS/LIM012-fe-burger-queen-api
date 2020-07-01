@@ -1,7 +1,7 @@
-# Burger Queen - API con Node.js
+# :hamburger:	:vibration_mode: Burger Queen - API con Node.js
 
 <p align="center">
-  <img src="![burger queen -api](https://user-images.githubusercontent.com/60928490/86297712-a46e5d80-bbc1-11ea-9d84-f6b475ccd5a7.png)">
+  <img src="https://user-images.githubusercontent.com/60928490/86297712-a46e5d80-bbc1-11ea-9d84-f6b475ccd5a7.png">
 </p>
 
 
