@@ -1,5 +1,7 @@
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
 const config = require('../config');
+const UsersService = require('../services/usersService');
 
 const { secret } = config;
 
@@ -17,11 +19,38 @@ module.exports = (app, nextMain) => {
    * @code {400} si no se proveen `email` o `password` o ninguno de los dos
    * @auth No requiere autenticación
    */
-  app.post('/auth', (req, resp, next) => {
+  app.post('/auth', async (req, resp, next) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
       return next(400);
+    }
+    console.log(email)
+    console.log(password)
+    const mongoClient = app.get('mongoClient');
+    const usersService = new UsersService(mongoClient);
+
+    const userAuth = await usersService.getUserAuth({ email });
+
+
+    if (userAuth && bcrypt.compareSync(password, userAuth.password)) {
+      console.log(userAuth.password)
+      const userId = userAuth._id;
+      const userEmail = userAuth.email;
+      const userRol = userAuth.roles;
+
+      const token = jwt.sign({ userId, userEmail, userRol }, secret, {
+        expiresIn: 60 * 60 * 24, 
+      });
+
+      resp.status(200).json({
+        email,
+        token,
+      });
+    } else {
+      resp.status(400).json({
+        message: 'No existe usuario',
+      });
     }
 
     // TODO: autenticar a la usuarix
