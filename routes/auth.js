@@ -1,7 +1,11 @@
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
 const config = require('../config');
+const MongoLib = require('../lib/mongoLib');
 
 const { secret } = config;
+// const mongoClient = new MongoLib();
+
 
 /** @module auth */
 module.exports = (app, nextMain) => {
@@ -23,8 +27,18 @@ module.exports = (app, nextMain) => {
     if (!email || !password) {
       return next(400);
     }
-
+    console.log(email, password)
     // TODO: autenticar a la usuarix
+    const salt = bcrypt.genSaltSync(10);
+    const hash = bcrypt.hashSync(password, salt);
+    console.log(salt, hash)
+
+
+    const token = jwt.sign({ uid: '123456' }, secret, { expiresIn: 60 * 60 * 24 });
+
+    resp.json({ token });
+    // resp.status(200).send({ token });
+
     next();
   });
 

@@ -6,16 +6,12 @@ const routes = require('./routes');
 const pkg = require('./package.json');
 const MongoLib = require('./lib/mongoLib');
 
-const { port, dbUrl, secret, dbName } = config;
+const { port, secret } = config;
 const app = express();
 
 // TODO: Conección a la BD en mogodb
-const mongoClient = new MongoLib(dbName, dbUrl);
-
-console.log(mongoClient.conection());
-console.log(dbUrl);
-console.log(dbName);
-
+const mongoClient = new MongoLib();
+mongoClient.conection();
 app.set('config', config);
 app.set('pkg', pkg);
 app.set('mongoClient', mongoClient);
