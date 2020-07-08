@@ -2,7 +2,6 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const config = require('../config');
 const UsersService = require('../services/usersService');
-const { MongoClient } = require('mongodb');
 
 const { secret } = config;
 
@@ -40,17 +39,20 @@ module.exports = (app, nextMain) => {
     console.log(userAuth);
 
     if (userAuth && bcrypt.compareSync(password, userAuth.password)) {
-      const token = jwt.sign({ id: '123456' }, secret, {
+      const userId = userAuth._id;
+      const userEmail = userAuth.email;
+      const userRol = userAuth.roles;
+
+      const token = jwt.sign({ userId, userEmail, userRol }, secret, {
         expiresIn: 60 * 60 * 24,
       });
 
-      resp.json({
+      resp.status(200).json({
         email,
-        password,
         token,
       });
     } else {
-      resp.json({
+      resp.status(400).json({
         message: 'No existe el usuario',
       });
     }
