@@ -4,14 +4,16 @@ const authMiddleware = require('./middleware/auth');
 const errorHandler = require('./middleware/error');
 const routes = require('./routes');
 const pkg = require('./package.json');
-const MongoLib = require('./lib/mongoLib');
+const MongoLib = require('./db-data/mongoLib');
 
-const { port, secret } = config;
+const {
+  port, dbUrl, secret, dbName,
+} = config;
 const app = express();
 
 // TODO: Conección a la BD en mogodb
-const mongoClient = new MongoLib();
-mongoClient.conection();
+const mongoClient = new MongoLib(dbName, dbUrl);
+
 app.set('config', config);
 app.set('pkg', pkg);
 app.set('mongoClient', mongoClient);
