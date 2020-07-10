@@ -4,7 +4,7 @@ const authMiddleware = require('./middleware/auth');
 const errorHandler = require('./middleware/error');
 const routes = require('./routes');
 const pkg = require('./package.json');
-const MongoLib = require('./db-data/mongoLib');
+// const MongoLib = require('./db-data/mongoLib');
 
 const {
   port, dbUrl, secret, dbName,
@@ -12,16 +12,16 @@ const {
 const app = express();
 
 // TODO: Conección a la BD en mogodb
-const mongoClient = new MongoLib(dbName, dbUrl);
+// const mongoClient = new MongoLib(dbName, dbUrl);
 
 app.set('config', config);
 app.set('pkg', pkg);
-app.set('mongoClient', mongoClient);
+// app.set('mongoClient', mongoClient);
 
 // parse application/x-www-form-urlencoded
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
-app.use(authMiddleware(secret));
+app.use(authMiddleware(secret, app));
 
 // Registrar rutas
 routes(app, (err) => {
