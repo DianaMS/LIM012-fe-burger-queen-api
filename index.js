@@ -4,19 +4,14 @@ const authMiddleware = require('./middleware/auth');
 const errorHandler = require('./middleware/error');
 const routes = require('./routes');
 const pkg = require('./package.json');
-// const MongoLib = require('./db-data/mongoLib');
 
 const {
-  port, dbUrl, secret, dbName,
+  port, secret,
 } = config;
 const app = express();
 
-// TODO: Conección a la BD en mogodb
-// const mongoClient = new MongoLib(dbName, dbUrl);
-
 app.set('config', config);
 app.set('pkg', pkg);
-// app.set('mongoClient', mongoClient);
 
 // parse application/x-www-form-urlencoded
 app.use(express.urlencoded({ extended: false }));
