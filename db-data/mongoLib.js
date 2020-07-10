@@ -14,10 +14,6 @@ class MongoLib {
       this.conectionCliente.connect((error) => {
         // eslint-disable-next-line no-unused-expressions
         (error) ? rej(error) : res(this.conectionCliente.db(this.dbName));
-        // if (error) {
-        //   rej(error);
-        // }
-        // res(this.conectionCliente.db(this.dbName));
       });
     });
   }
