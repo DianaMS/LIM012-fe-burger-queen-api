@@ -4,8 +4,6 @@ const config = require('../config');
 const UsersService = require('../services/usersService');
 
 const { secret } = config;
-// const mongoClient = new MongoLib();
-
 
 /** @module auth */
 module.exports = (app, nextMain) => {
@@ -28,16 +26,9 @@ module.exports = (app, nextMain) => {
       return next(400);
     }
 
-    //se obtiene la instancia de MongoLib del index.js
     const usersService = new UsersService();
-    // const salt = bcrypt.genSaltSync(10);
-    // const passwordEncrypted = bcrypt.hashSync(password, salt);
-    // console.log(passwordEncrypted)
-    // console.log(email, passwordEncrypted);
-
     const userAuth = await usersService.getUserAuth({ email });
-    console.log(userAuth)
-    
+
     if (userAuth && bcrypt.compareSync(req.body.password, userAuth.password)) {
       const userId = userAuth._id;
       const userEmail = userAuth.email;
@@ -56,11 +47,6 @@ module.exports = (app, nextMain) => {
         message: 'No existe el usuario',
       });
     }
-
-    // next(400);
-    // TODO: autenticar a la usuarix
-    // next();
   });
-
   return nextMain();
 };
