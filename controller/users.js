@@ -8,7 +8,6 @@ module.exports = {
 
     try {
       const users = await usersService.getUsers({ tags });
-      console.log('usuaria', users);
       resp.status(200).json({
         data: users,
         message: 'users listed',
@@ -20,11 +19,9 @@ module.exports = {
 
   getUser: async (req, resp, next) => {
     const { userId } = req.params;
-    console.log({ userId });
 
     try {
       const user = await usersService.getUser({ userId });
-      console.log(user);
       resp.status(200).json({
         data: user,
         message: 'user retrieved ',
@@ -54,8 +51,6 @@ module.exports = {
 
     try {
       const updateUser = await usersService.updateUser({ userId, user });
-      console.log(updateUser);
-
       resp.status(200).json({
         data: updateUser,
         message: 'user update',
@@ -70,7 +65,6 @@ module.exports = {
 
     try {
       const userDelete = await usersService.deleteUser({ userId });
-
       resp.status(200).json({
         data: userDelete,
         message: 'user delete',
