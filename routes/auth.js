@@ -28,19 +28,19 @@ module.exports = (app, nextMain) => {
       return next(400);
     }
 
-    //se obtiene la instancia de MongoLib del index.js
+    //  se obtiene la instancia de MongoLib del index.js
     const mongoClient = app.get('mongoClient');
     const usersService = new UsersService(mongoClient);
 
     // const salt = bcrypt.genSaltSync(10);
     // const passwordEncrypted = bcrypt.hashSync(password, salt);
+    // console.log(passwordEncrypted)
     // console.log(email, passwordEncrypted);
 
     const userAuth = await usersService.getUserAuth({ email });
-
-    console.log(userAuth);
-
-    if (userAuth && bcrypt.compareSync(password, userAuth.password)) {
+    console.log(userAuth)
+    
+    if (userAuth && bcrypt.compareSync(req.body.password, userAuth.password)) {
       const userId = userAuth._id;
       const userEmail = userAuth.email;
       const userRol = userAuth.roles;
@@ -58,6 +58,8 @@ module.exports = (app, nextMain) => {
         message: 'No existe el usuario',
       });
     }
+
+    // next(400);
     // TODO: autenticar a la usuarix
     // next();
   });

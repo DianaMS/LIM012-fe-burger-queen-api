@@ -13,7 +13,6 @@ class MongoLib {
           rej(error);
         }
         console.log('conexion exitosa!!');
-        console.log('conexion!!');
         res(this.conectionCliente.db(this.dbName));
       });
     });
@@ -28,6 +27,7 @@ class MongoLib {
   }
 
   getAuth(collection, emailUser) {
+    console.log(collection, emailUser)
     return this.conection().then((db) => db.collection(collection)
       .findOne({ email: emailUser }));
   }
