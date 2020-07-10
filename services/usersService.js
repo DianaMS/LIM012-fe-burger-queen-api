@@ -1,9 +1,12 @@
-// const MongoLib = require('../db-data/mongoLib');
+const MongoLib = require('../db-data/mongoLib');
+const config = require('../config');
+
+const { dbName, dbUrl } = config;
 
 class UsersService {
-  constructor(mongoDB) {
+  constructor() {
     this.collection = 'users';
-    this.mongoDB = mongoDB;
+    this.mongoDB = new MongoLib(dbName, dbUrl);
   }
 
   async getUsers({ tags }) {
@@ -14,7 +17,7 @@ class UsersService {
 
   async getUser({ userId }) {
     const user = await this.mongoDB.getOne(this.collection, userId);
-    return user || [];
+    return user || null;
   }
 
   async getUserAuth({ email }) {

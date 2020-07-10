@@ -1,5 +1,5 @@
-const { ObjectId } = require('mongodb');
 const jwt = require('jsonwebtoken');
+const UsersService = require('../services/usersService');
 
 module.exports = (secret) => (req, resp, next) => {
   const { authorization } = req.headers;
@@ -9,39 +9,50 @@ module.exports = (secret) => (req, resp, next) => {
   }
 
   const [type, token] = authorization.split(' ');
-
   if (type.toLowerCase() !== 'bearer') {
     return next();
   }
 
-  jwt.verify(token, secret, (err, decodedToken) => {
+  jwt.verify(token, secret, async (err, decodedToken) => {
     if (err) {
       return next(403);
     }
-    // TODO: Verificar identidad del usuario usando `decodeToken.uid`
-    
+
+    const usersService = new UsersService();
+    const { userId } = decodedToken;
+    const user = await usersService.getUser({ userId });
+
+    if (user && user.email === decodedToken.userEmail
+      && user.roles.admin === decodedToken.userRol.admin) {
+      req.userDecoded = decodedToken;
+      return next();
+    }
+    return next(401);
   });
 };
 
-
-module.exports.isAuthenticated = (req) => (
-  // TODO: decidir por la informacion del request si la usuaria esta autenticada
-  false
-);
-
-
-module.exports.isAdmin = (req) => (
-  // TODO: decidir por la informacion del request si la usuaria es admin
-  false
-);
+module.exports.isAuthenticated = (req) => {
+  if (req.userDecoded) {
+    return true;
+  }
+  return false;
+};
 
 
-module.exports.requireAuth = (req, resp, next) => (
-  (!module.exports.isAuthenticated(req))
-    ? next(401)
-    : next()
-);
+module.exports.isAdmin = (req) => {
+  if (req.userDecoded.userRol) {
+    return true;
+  }
+  return false;
+};
 
+module.exports.requireAuth = (req, resp, next) => {
+  return (
+    (!module.exports.isAuthenticated(req))
+      ? next(401)
+      : next()
+  );
+};
 
 module.exports.requireAdmin = (req, resp, next) => (
   // eslint-disable-next-line no-nested-ternary

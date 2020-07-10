@@ -2,19 +2,18 @@ const { MongoClient, ObjectId } = require('mongodb');
 
 class MongoLib {
   constructor(dbName, dbUrl) {
-    this.conectionCliente = new MongoClient(dbUrl, { useNewUrlParser: true, useUnifiedTopology: true });
+    this.conectionCliente = new MongoClient(dbUrl, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
     this.dbName = dbName;
   }
 
   conection() {
     return new Promise((res, rej) => {
       this.conectionCliente.connect((error) => {
-        if (error) {
-          rej(error);
-        }
-        console.log('conexion exitosa!!');
-        console.log('conexion!!');
-        res(this.conectionCliente.db(this.dbName));
+        // eslint-disable-next-line no-unused-expressions
+        (error) ? rej(error) : res(this.conectionCliente.db(this.dbName));
       });
     });
   }
