@@ -13,7 +13,6 @@ class MongoLib {
           rej(error);
         }
         console.log('conexion exitosa!!');
-        console.log('conexion!!');
         res(this.conectionCliente.db(this.dbName));
       });
     });

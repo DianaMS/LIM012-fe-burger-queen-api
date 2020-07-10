@@ -27,8 +27,7 @@ module.exports = (app, nextMain) => {
     }
 
     //se obtiene la instancia de MongoLib del index.js
-    const mongoClient = app.get('mongoClient');
-    const usersService = new UsersService(mongoClient);
+    const usersService = new UsersService();
 
     // const salt = bcrypt.genSaltSync(10);
     // const passwordEncrypted = bcrypt.hashSync(password, salt);
