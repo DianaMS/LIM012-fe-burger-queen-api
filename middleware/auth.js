@@ -1,3 +1,4 @@
+const { ObjectId } = require('mongodb');
 const jwt = require('jsonwebtoken');
 const UsersService = require('../services/usersService');
 
@@ -17,6 +18,7 @@ module.exports = (secret) => (req, resp, next) => {
     if (err) {
       return next(403);
     }
+  
     console.log(decodedToken);
     const usersService = new UsersService();
     const { userId } = decodedToken;

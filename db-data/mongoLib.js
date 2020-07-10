@@ -27,6 +27,7 @@ class MongoLib {
   }
 
   getAuth(collection, emailUser) {
+    console.log(collection, emailUser)
     return this.conection().then((db) => db.collection(collection)
       .findOne({ email: emailUser }));
   }
