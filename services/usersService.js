@@ -3,7 +3,6 @@ const config = require('../config');
 
 const { dbName, dbUrl } = config;
 
-
 class UsersService {
   constructor() {
     this.collection = 'users';
