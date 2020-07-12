@@ -45,4 +45,37 @@ module.exports = {
       next(error);
     }
   },
+
+  putProduct: async (req, resp, next) => {
+    const { productId } = req.params;
+    const { body: product } = req;
+
+    if (!req.body.name && !req.body.price && !req.body.image && !req.body.type) {
+      return next(400);
+    }
+
+    try {
+      const updateProduct = await productsService.updateProduct({productId, product});
+      resp.status(200).json({
+        data: updateProduct,
+        message: 'product update',
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  deleteProduct: async (req, resp, next) => {
+    const { productId } = req.params;
+
+    try {
+      const productDelete = await productsService.deleteProduct({ productId });
+      resp.status(200).json({
+        data: productDelete,
+        message: 'product delete',
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
 };
