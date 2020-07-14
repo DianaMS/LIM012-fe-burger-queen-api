@@ -55,7 +55,7 @@ module.exports = {
     }
 
     try {
-      const updateProduct = await productsService.updateProduct({productId, product});
+      const updateProduct = await productsService.updateProduct({ productId, product });
       resp.status(200).json({
         data: updateProduct,
         message: 'product update',
