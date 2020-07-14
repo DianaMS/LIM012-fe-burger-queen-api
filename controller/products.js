@@ -20,6 +20,9 @@ module.exports = {
     const { productId } = req.params;
     try {
       const product = await productsService.getProduct({ productId });
+      if (product.length === 0) {
+        return next(404);
+      }
       resp.status(200).json({
         data: product,
         message: 'product retrieved',
@@ -55,7 +58,7 @@ module.exports = {
     }
 
     try {
-      const updateProduct = await productsService.updateProduct({productId, product});
+      const updateProduct = await productsService.updateProduct({ productId, product });
       resp.status(200).json({
         data: updateProduct,
         message: 'product update',
@@ -67,7 +70,10 @@ module.exports = {
 
   deleteProduct: async (req, resp, next) => {
     const { productId } = req.params;
-
+    const checkProduct = await productsService.getProduct({ productId });
+    if (checkProduct.length === 0) {
+      return next(404);
+    }
     try {
       const productDelete = await productsService.deleteProduct({ productId });
       resp.status(200).json({
