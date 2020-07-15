@@ -46,7 +46,6 @@ module.exports = {
 
     try {
       const objectUserId = await usersService.getUser({ userId });
-      console.log(objectUserId);
 
       if (!objectUserId || objectUserId === null || productsArray.length <= 0) {
         return next(400);
@@ -69,14 +68,12 @@ module.exports = {
       order.dateEntry = new Date();
       order.dateProcessed = '';
       const orderId = await ordersService.createOrder({ order });
-      console.log('OrderID: ', orderId);
       const createOrderObject = await ordersService.getOrder({ orderId });
-      console.log(createOrderObject);
 
       const productsAndQuantity = orderedProducts.map((product) => {
         const productFilter = createOrderObject.products
           .filter((element) => element.productId === product._id.toString());
-          console.log(productFilter);
+
         return {
           product,
           qty: productFilter[0].qty,
@@ -101,16 +98,43 @@ module.exports = {
   putOrder: async (req, resp, next) => {
     const { orderId } = req.params;
     const { body: order } = req;
-
-    if (!req.body.userId || !req.body.products || !req.body.qty || req.body.status !== 'pending'
-     || req.body.status !== 'canceled' || req.body.status !== 'delivering') {
-      next(400);
-    }
+    const productsArray = order.products;
+    const orderedProducts = [];
 
     try {
+      for (let i = 0; i < productsArray.length; i += 1) {
+        const { productId } = productsArray[i];
+        // eslint-disable-next-line no-await-in-loop
+        const objectProduct = await productsService.getProduct({ productId });
+        if (objectProduct === null) {
+          next(400);
+        }
+        orderedProducts.push(objectProduct);
+      }
+
       const updateOrder = await ordersService.updateOrder({ orderId, order });
+      console.log(typeof updateOrder);
+      const objectUpdateOrder = await ordersService.getOrder({ orderId });
+      console.log(objectUpdateOrder);
+
+      const productsAndQuantity = orderedProducts.map((product) => {
+        const productFilter = objectUpdateOrder.products
+          .filter((element) => element.productId === product._id.toString());
+
+        return {
+          product,
+          qty: productFilter[0].qty,
+        };
+      });
+
       resp.status(200).json({
-        data: updateOrder,
+        orderId: objectUpdateOrder._id,
+        userId: objectUpdateOrder.userId,
+        client: objectUpdateOrder.client,
+        products: productsAndQuantity,
+        status: objectUpdateOrder.status,
+        dateEntry: objectUpdateOrder.dateEntry,
+        dateProcessed: objectUpdateOrder.dateProcessed,
         message: 'order update',
       });
     } catch (error) {
