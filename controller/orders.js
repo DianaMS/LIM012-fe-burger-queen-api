@@ -1,6 +1,10 @@
 const OrdersService = require('../services/ordersService');
+const UsersService = require('../services/usersService');
+const ProductsService = require('../services/productsService');
 
 const ordersService = new OrdersService();
+const usersService = new UsersService();
+const productsService = new ProductsService();
 
 module.exports = {
   getOrders: async (req, resp, next) => {
@@ -36,14 +40,57 @@ module.exports = {
 
   postOrder: async (req, resp, next) => {
     const { body: order } = req;
-    if (!req.body.userId || !req.body.products) {
-      next(400);
-    }
+    const { userId } = order;
+    const productsArray = order.products;
+    const orderedProducts = [];
 
     try {
-      const createOrder = await ordersService.createOrder({ order });
+      const objectUserId = await usersService.getUser({ userId });
+      console.log(objectUserId);
+
+      if (!objectUserId || objectUserId === null || productsArray.length <= 0) {
+        return next(400);
+      }
+
+      for (let i = 0; i < productsArray.length; i += 1) {
+        const { productId } = productsArray[i];
+        // eslint-disable-next-line no-await-in-loop
+        const objectProduct = await productsService.getProduct({ productId });
+        if (objectProduct === null) {
+          return next(400);
+        }
+        orderedProducts.push(objectProduct);
+      }
+
+      console.log('Productos ordenados:');
+      console.log(orderedProducts);
+
+      order.status = 'pending';
+      order.dateEntry = new Date();
+      order.dateProcessed = '';
+      const orderId = await ordersService.createOrder({ order });
+      console.log('OrderID: ', orderId);
+      const createOrderObject = await ordersService.getOrder({ orderId });
+      console.log(createOrderObject);
+
+      const productsAndQuantity = orderedProducts.map((product) => {
+        const productFilter = createOrderObject.products
+          .filter((element) => element.productId === product._id.toString());
+          console.log(productFilter);
+        return {
+          product,
+          qty: productFilter[0].qty,
+        };
+      });
+
       resp.status(201).json({
-        data: createOrder,
+        orderId,
+        userId: createOrderObject.userId,
+        client: createOrderObject.client,
+        products: productsAndQuantity,
+        status: createOrderObject.status,
+        dateEntry: createOrderObject.dateEntry,
+        dateProcessed: createOrderObject.dateProcessed,
         message: 'order created',
       });
     } catch (error) {
@@ -62,7 +109,6 @@ module.exports = {
 
     try {
       const updateOrder = await ordersService.updateOrder({ orderId, order });
-      console.log(updateOrder);
       resp.status(200).json({
         data: updateOrder,
         message: 'order update',
@@ -77,7 +123,6 @@ module.exports = {
 
     try {
       const orderDelete = await ordersService.deleteOrder({ orderId });
-      console.log(orderDelete);
       resp.status(200).json({
         data: orderDelete,
         message: ' order delete',
