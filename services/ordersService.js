@@ -16,8 +16,12 @@ class OrdersService {
   }
 
   async getOrder({ orderId }) {
-    const order = await this.mongoDB.getOne(this.collection, orderId);
-    return order || null;
+    try {
+      const order = await this.mongoDB.getOne(this.collection, orderId);
+      return order || null;
+    } catch (error) {
+      return null;
+    }
   }
 
   async createOrder({ order }) {

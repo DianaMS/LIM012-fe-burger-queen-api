@@ -98,24 +98,41 @@ module.exports = {
   putOrder: async (req, resp, next) => {
     const { orderId } = req.params;
     const { body: order } = req;
+    const { userId } = order;
     const productsArray = order.products;
     const orderedProducts = [];
+    const orderStatus = order.status;
 
     try {
+      const objectUser = await usersService.getUser({ userId });
+      if (!objectUser || objectUser === null || productsArray.length <= 0) {
+        return next(400);
+      }
+
       for (let i = 0; i < productsArray.length; i += 1) {
         const { productId } = productsArray[i];
         // eslint-disable-next-line no-await-in-loop
         const objectProduct = await productsService.getProduct({ productId });
         if (objectProduct === null) {
-          next(400);
+          return next(400);
         }
         orderedProducts.push(objectProduct);
       }
 
+      // console.log(orderStatus);
+      // if (orderStatus !== 'pending' || orderStatus !== 'canceled'
+      //     || orderStatus !== 'delivering' || orderStatus !== 'delivered') {
+      //   return next(400);
+      // }
+
+      const validateOrderId = await ordersService.getOrder({ orderId });
+      if (validateOrderId === null) {
+        return next(404);
+      }
+
       const updateOrder = await ordersService.updateOrder({ orderId, order });
-      console.log(typeof updateOrder);
+      console.log(updateOrder);
       const objectUpdateOrder = await ordersService.getOrder({ orderId });
-      console.log(objectUpdateOrder);
 
       const productsAndQuantity = orderedProducts.map((product) => {
         const productFilter = objectUpdateOrder.products
