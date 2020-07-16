@@ -1,6 +1,8 @@
 const OrdersService = require('../services/ordersService');
 const UsersService = require('../services/usersService');
 const ProductsService = require('../services/productsService');
+const products = require('./products');
+const orders = require('../routes/orders');
 
 const ordersService = new OrdersService();
 const usersService = new UsersService();
@@ -12,10 +14,45 @@ module.exports = {
 
     try {
       const orders = await ordersService.getOrders({ tags });
-      resp.status(200).json({
-        data: orders,
-        message: 'orders listed',
-      });
+
+      for (let i = 0; i < orders.length; i += 1) {
+        const productsArray = orders[i].products;
+        console.log('arrar de productosOrder:', productsArray);
+        const orderedProducts = [];
+        for (let j = 0; j < productsArray.length; j += 1) {
+          const { productId } = productsArray[j];
+          console.log(productId);
+          // eslint-disable-next-line no-await-in-loop
+          const objectProduct = await productsService.getProduct({ productId });
+          if (objectProduct === null) {
+            return next(400);
+          }
+          console.log(objectProduct);
+          orderedProducts.push(objectProduct);
+        }
+
+        console.log(orderedProducts);
+        const productsAndQuantity = orderedProducts.map((product) => {
+          const productFilter = productsArray
+            .filter((element) => element.productId === product._id.toString());
+          return {
+            product,
+            qty: productFilter[0].qty,
+          };
+        });
+
+        console.log(productsAndQuantity);
+
+        resp.status(200).json({
+          orderId: orders[i]._id,
+          userId: orders[i].userId,
+          client: orders[i].client,
+          products: productsAndQuantity,
+          status: orders[i].status,
+          dateEntry: orders[i].dateEntry,
+          dateProcessed: orders[i].dateProcessed,
+        });
+      }
     } catch (error) {
       next(error);
     }
@@ -26,9 +63,13 @@ module.exports = {
 
     try {
       const order = await ordersService.getOrder({ orderId });
+      console.log(order);
       if (order === null) {
         next(404);
       }
+
+      const productsArray = order[0].products;
+
       resp.status(200).json({
         data: order,
         message: 'ordes retrieved',
