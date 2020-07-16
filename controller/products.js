@@ -7,6 +7,7 @@ module.exports = {
     const { tags } = req.query;
     try {
       const products = await productsService.getProducts({ tags });
+      console.log(products)
       resp.status(200).json({
         data: products,
         message: 'products listed',
@@ -20,7 +21,9 @@ module.exports = {
     const { productId } = req.params;
     try {
       const product = await productsService.getProduct({ productId });
-      if (product.length === 0) {
+      console.log('response de getProduct', product)
+      console.log(productId)
+      if (product === null) {
         return next(404);
       }
       resp.status(200).json({
@@ -34,14 +37,20 @@ module.exports = {
 
   postProduct: async (req, resp, next) => {
     const { body: product } = req;
+    product.dateEntry = new Date();
     if (!req.body.name || !req.body.price) {
       return next(400);
     }
 
     try {
       const createProduct = await productsService.createProduct({ product });
-      resp.status(200).json({
-        data: createProduct,
+       resp.status(200).json({
+        id: product._id,
+        name: product.name,
+        price: product.price,
+        image: product.image,
+        type: product.type,
+        date: product.dateEntry,
         message: 'product created',
       });
     } catch (error) {
@@ -52,15 +61,27 @@ module.exports = {
   putProduct: async (req, resp, next) => {
     const { productId } = req.params;
     const { body: product } = req;
+    product.dateEntry = new Date();
 
     if (!req.body.name && !req.body.price && !req.body.image && !req.body.type) {
       return next(400);
     }
 
+    const validateProductId = await productsService.getProduct({productId});
+    if (!validateProductId) {
+      return next(404);
+    }
+
     try {
       const updateProduct = await productsService.updateProduct({ productId, product });
+      console.log(updateProduct)
       resp.status(200).json({
-        data: updateProduct,
+        id: updateProduct,
+        name: product.name,
+        price: product.price,
+        image: product.image,
+        type: product.type,
+        date: product.dateEntry,
         message: 'product update',
       });
     } catch (error) {
@@ -70,14 +91,23 @@ module.exports = {
 
   deleteProduct: async (req, resp, next) => {
     const { productId } = req.params;
+    const { body: product } = req;
+    product.dateEntry = new Date();
+    
     const checkProduct = await productsService.getProduct({ productId });
-    if (checkProduct.length === 0) {
+    if (!checkProduct) {
       return next(404);
     }
+
     try {
       const productDelete = await productsService.deleteProduct({ productId });
       resp.status(200).json({
-        data: productDelete,
+        id: productDelete,
+        name: product.name,
+        price: product.price,
+        image: product.image,
+        type: product.type,
+        date: product.dateEntry,
         message: 'product delete',
       });
     } catch (error) {
