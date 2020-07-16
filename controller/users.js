@@ -1,5 +1,6 @@
 const bcrypt = require('bcrypt');
 const UsersService = require('../services/usersService');
+const validateEmail = require('./utils/validateEmail');
 
 const usersService = new UsersService();
 
@@ -12,7 +13,6 @@ module.exports = {
       }
 
       const user = await usersService.getUserByEmail({ email: adminEmail });
-
       if (user === null) {
         const adminUser = {
           email: adminEmail,
@@ -31,12 +31,22 @@ module.exports = {
 
   getUsers: async (req, resp, next) => {
     const { tags } = req.query;
+    const dataUser = [];
 
     try {
       const users = await usersService.getUsers({ tags });
+      users.forEach((user) => {
+        const detailsUser = {
+          userId: user._id,
+          email: user.email,
+          roles: user.roles,
+        };
+
+        dataUser.push(detailsUser);
+      });
+
       resp.status(200).json({
-        data: users,
-        message: 'users listed',
+        data: dataUser,
       });
     } catch (error) {
       next(error);
@@ -49,8 +59,9 @@ module.exports = {
     try {
       const user = await usersService.getUser({ userId });
       resp.status(200).json({
-        data: user,
-        message: 'user retrieved ',
+        userId: user._id,
+        email: user.email,
+        roles: user.roles,
       });
     } catch (error) {
       next(error);
@@ -61,9 +72,23 @@ module.exports = {
     const { body: user } = req;
 
     try {
-      const createUser = await usersService.createUser({ user });
+      if (!validateEmail(user.email)) {
+        return next(400);
+      }
+      const objectUser = await usersService.getUserByEmail({ email: user.email });
+      if (objectUser !== null) {
+        return next(403);
+      }
+
+      if (!user.email || !user.password) {
+        return next(400);
+      }
+
+      await usersService.createUser({ user });
       resp.status(200).json({
-        data: createUser,
+        userId: user._id,
+        email: user.email,
+        roles: user.roles,
         message: 'user created',
       });
     } catch (error) {
@@ -76,9 +101,18 @@ module.exports = {
     const { body: user } = req;
 
     try {
+      if (!validateEmail(user.email)) {
+        return next(400);
+      }
+      const objectUser = await usersService.getUser({ userId });
+      if (objectUser === null) {
+        return next(404);
+      }
       const updateUser = await usersService.updateUser({ userId, user });
       resp.status(200).json({
-        data: updateUser,
+        userId: updateUser,
+        email: user.email,
+        roles: user.roles,
         message: 'user update',
       });
     } catch (error) {
@@ -90,9 +124,15 @@ module.exports = {
     const { userId } = req.params;
 
     try {
+      const objectUser = await usersService.getUser({ userId });
+      if (objectUser === null) {
+        return next(404);
+      }
       const userDelete = await usersService.deleteUser({ userId });
       resp.status(200).json({
-        data: userDelete,
+        userId: userDelete,
+        email: objectUser.email,
+        roles: objectUser.roles,
         message: 'user delete',
       });
     } catch (error) {

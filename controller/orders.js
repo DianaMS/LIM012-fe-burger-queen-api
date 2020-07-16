@@ -209,7 +209,7 @@ module.exports = {
         products: productsAndQuantity,
         status: objectUpdateOrder.status,
         dateEntry: objectUpdateOrder.dateEntry,
-        dateProcessed: new Date(),
+        dateProcessed: objectUpdateOrder.dateProcessed,
         message: 'order update',
       });
     } catch (error) {
@@ -255,6 +255,7 @@ module.exports = {
         status: orderObject.status,
         dateEntry: orderObject.dateEntry,
         dateProcessed: orderObject.dateProcessed,
+        message: 'order delete',
       });
     } catch (error) {
       next(error);
