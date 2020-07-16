@@ -1,8 +1,6 @@
 const OrdersService = require('../services/ordersService');
 const UsersService = require('../services/usersService');
 const ProductsService = require('../services/productsService');
-const products = require('./products');
-const orders = require('../routes/orders');
 
 const ordersService = new OrdersService();
 const usersService = new UsersService();
@@ -14,24 +12,21 @@ module.exports = {
 
     try {
       const orders = await ordersService.getOrders({ tags });
+      const allOrders = [];
 
       for (let i = 0; i < orders.length; i += 1) {
         const productsArray = orders[i].products;
-        console.log('arrar de productosOrder:', productsArray);
         const orderedProducts = [];
         for (let j = 0; j < productsArray.length; j += 1) {
           const { productId } = productsArray[j];
-          console.log(productId);
           // eslint-disable-next-line no-await-in-loop
           const objectProduct = await productsService.getProduct({ productId });
           if (objectProduct === null) {
             return next(400);
           }
-          console.log(objectProduct);
           orderedProducts.push(objectProduct);
         }
 
-        console.log(orderedProducts);
         const productsAndQuantity = orderedProducts.map((product) => {
           const productFilter = productsArray
             .filter((element) => element.productId === product._id.toString());
@@ -41,9 +36,7 @@ module.exports = {
           };
         });
 
-        console.log(productsAndQuantity);
-
-        resp.status(200).json({
+        const detailsOrder = {
           orderId: orders[i]._id,
           userId: orders[i].userId,
           client: orders[i].client,
@@ -51,8 +44,14 @@ module.exports = {
           status: orders[i].status,
           dateEntry: orders[i].dateEntry,
           dateProcessed: orders[i].dateProcessed,
-        });
+        };
+
+        allOrders.push(detailsOrder);
       }
+
+      resp.status(200).json({
+        orders: allOrders,
+      });
     } catch (error) {
       next(error);
     }
@@ -63,7 +62,6 @@ module.exports = {
 
     try {
       const order = await ordersService.getOrder({ orderId });
-      console.log(order);
       if (order === null) {
         next(404);
       }
@@ -78,7 +76,6 @@ module.exports = {
 
         orderedProducts.push(objectProduct);
       }
-      console.log(orderedProducts);
 
       const productsAndQuantity = orderedProducts.map((product) => {
         const productFilter = productsArray
@@ -125,9 +122,6 @@ module.exports = {
         }
         orderedProducts.push(objectProduct);
       }
-
-      console.log('Productos ordenados:');
-      console.log(orderedProducts);
 
       order.status = 'pending';
       order.dateEntry = new Date();
