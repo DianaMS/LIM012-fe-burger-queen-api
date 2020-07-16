@@ -168,6 +168,13 @@ module.exports = {
         return next(400);
       }
 
+      console.log(order);
+      console.log(orderStatus);
+      if (orderStatus !== 'pending' && orderStatus !== 'canceled'
+          && orderStatus !== 'delivering' && orderStatus !== 'delivered') {
+        return next(400);
+      }
+
       for (let i = 0; i < productsArray.length; i += 1) {
         const { productId } = productsArray[i];
         // eslint-disable-next-line no-await-in-loop
@@ -178,19 +185,12 @@ module.exports = {
         orderedProducts.push(objectProduct);
       }
 
-      // console.log(orderStatus);
-      // if (orderStatus !== 'pending' || orderStatus !== 'canceled'
-      //     || orderStatus !== 'delivering' || orderStatus !== 'delivered') {
-      //   return next(400);
-      // }
-
       const validateOrderId = await ordersService.getOrder({ orderId });
       if (validateOrderId === null) {
         return next(404);
       }
 
-      const updateOrder = await ordersService.updateOrder({ orderId, order });
-      console.log(updateOrder);
+      await ordersService.updateOrder({ orderId, order });
       const objectUpdateOrder = await ordersService.getOrder({ orderId });
 
       const productsAndQuantity = orderedProducts.map((product) => {
