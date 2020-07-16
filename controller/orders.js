@@ -68,11 +68,35 @@ module.exports = {
         next(404);
       }
 
-      const productsArray = order[0].products;
+      const productsArray = order.products;
+      const orderedProducts = [];
+
+      for (let i = 0; i < productsArray.length; i += 1) {
+        const { productId } = productsArray[i];
+        // eslint-disable-next-line no-await-in-loop
+        const objectProduct = await productsService.getProduct({ productId });
+
+        orderedProducts.push(objectProduct);
+      }
+      console.log(orderedProducts);
+
+      const productsAndQuantity = orderedProducts.map((product) => {
+        const productFilter = productsArray
+          .filter((element) => element.productId === product._id.toString());
+        return {
+          product,
+          qty: productFilter[0].qty,
+        };
+      });
 
       resp.status(200).json({
-        data: order,
-        message: 'ordes retrieved',
+        orderId: order._id,
+        userId: order.userId,
+        client: order.client,
+        products: productsAndQuantity,
+        status: order.status,
+        dateEntry: order.dateEntry,
+        dateProcessed: order.dateProcessed,
       });
     } catch (error) {
       next(error);
