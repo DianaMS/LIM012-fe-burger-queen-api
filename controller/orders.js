@@ -168,8 +168,6 @@ module.exports = {
         return next(400);
       }
 
-      console.log(order);
-      console.log(orderStatus);
       if (orderStatus !== 'pending' && orderStatus !== 'canceled'
           && orderStatus !== 'delivering' && orderStatus !== 'delivered') {
         return next(400);
@@ -190,6 +188,7 @@ module.exports = {
         return next(404);
       }
 
+      order.dateProcessed = new Date();
       await ordersService.updateOrder({ orderId, order });
       const objectUpdateOrder = await ordersService.getOrder({ orderId });
 
@@ -210,7 +209,7 @@ module.exports = {
         products: productsAndQuantity,
         status: objectUpdateOrder.status,
         dateEntry: objectUpdateOrder.dateEntry,
-        dateProcessed: objectUpdateOrder.dateProcessed,
+        dateProcessed: new Date(),
         message: 'order update',
       });
     } catch (error) {
@@ -222,10 +221,40 @@ module.exports = {
     const { orderId } = req.params;
 
     try {
-      const orderDelete = await ordersService.deleteOrder({ orderId });
+      const orderObject = await ordersService.getOrder({ orderId });
+      if (orderObject === null) {
+        return next(404);
+      }
+
+      const productsArray = orderObject.products;
+      const orderedProducts = [];
+
+      for (let i = 0; i < productsArray.length; i += 1) {
+        const { productId } = productsArray[i];
+        // eslint-disable-next-line no-await-in-loop
+        const objectProduct = await productsService.getProduct({ productId });
+        orderedProducts.push(objectProduct);
+      }
+
+      const productsAndQuantity = orderedProducts.map((product) => {
+        const productFilter = productsArray
+          .filter((element) => element.productId === product._id.toString());
+        return {
+          product,
+          qty: productFilter[0].qty,
+        };
+      });
+
+      await ordersService.deleteOrder({ orderId });
+
       resp.status(200).json({
-        data: orderDelete,
-        message: ' order delete',
+        orderId: orderObject._id,
+        userId: orderObject.userId,
+        client: orderObject.client,
+        products: productsAndQuantity,
+        status: orderObject.status,
+        dateEntry: orderObject.dateEntry,
+        dateProcessed: orderObject.dateProcessed,
       });
     } catch (error) {
       next(error);
