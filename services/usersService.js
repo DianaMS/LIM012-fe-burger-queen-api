@@ -24,8 +24,8 @@ class UsersService {
     }
   }
 
-  async getUserAuth({ email }) {
-    const userAuth = await this.mongoDB.getAuth(this.collection, email);
+  async getUserByEmail({ email }) {
+    const userAuth = await this.mongoDB.getUserByEmail(this.collection, email);
     return userAuth || null;
   }
 

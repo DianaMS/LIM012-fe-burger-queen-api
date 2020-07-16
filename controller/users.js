@@ -1,8 +1,34 @@
+const bcrypt = require('bcrypt');
 const UsersService = require('../services/usersService');
 
 const usersService = new UsersService();
 
 module.exports = {
+  initAdmin: async (app, next) => {
+    try {
+      const { adminEmail, adminPassword } = app.get('config');
+      if (!adminEmail || !adminPassword) {
+        return next();
+      }
+
+      const user = await usersService.getUserByEmail({ email: adminEmail });
+
+      if (user === null) {
+        const adminUser = {
+          email: adminEmail,
+          password: bcrypt.hashSync(adminPassword, 10),
+          roles: { admin: true },
+        };
+
+        await usersService.createUser({ user: adminUser });
+      }
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log('No se pudo crear un usuario administrador', error);
+    }
+    next();
+  },
+
   getUsers: async (req, resp, next) => {
     const { tags } = req.query;
 

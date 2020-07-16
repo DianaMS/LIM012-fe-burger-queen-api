@@ -27,7 +27,7 @@ module.exports = (app, nextMain) => {
     }
 
     const usersService = new UsersService();
-    const userAuth = await usersService.getUserAuth({ email });
+    const userAuth = await usersService.getUserByEmail({ email });
 
     if (userAuth && bcrypt.compareSync(req.body.password, userAuth.password)) {
       const userId = userAuth._id;

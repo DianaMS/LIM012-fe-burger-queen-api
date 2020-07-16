@@ -1,14 +1,10 @@
-const bcrypt = require('bcrypt');
-const UsersService = require('../services/usersService');
-
-const usersService = new UsersService();
-
 const {
   requireAuth,
   requireAdmin,
 } = require('../middleware/auth');
 
 const {
+  initAdmin,
   getUsers,
   getUser,
   postUser,
@@ -16,28 +12,7 @@ const {
   deleteUser,
 } = require('../controller/users');
 
-const initAdminUser = async (app, next) => {
-  const { adminEmail, adminPassword } = app.get('config');
-  if (!adminEmail || !adminPassword) {
-    return next();
-  }
-
-  const adminUser = {
-    email: adminEmail,
-    password: bcrypt.hashSync(adminPassword, 10),
-    roles: { admin: true },
-  };
-  // try {
-  //   const createAdmin = await usersService.createUser(adminUser);
-  //   console.log(createAdmin);
-  // } catch (error) {
-  //   next(error);
-  // }
-
-  // TODO: crear usuaria admin
-  next();
-};
-
+const initAdminUser = initAdmin;
 
 /*
  * Diagrama de flujo de una aplicación y petición en node - express :
