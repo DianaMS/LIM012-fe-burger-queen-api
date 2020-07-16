@@ -16,8 +16,12 @@ class ProductsService {
   }
 
   async getProduct({ productId }) {
-    const product = await this.mongoDB.getOne(this.collection, productId);
-    return product || [];
+    try {
+      const product = await this.mongoDB.getOne(this.collection, productId);
+      return product || null;
+    } catch (error) {
+      return null;
+    }    
   }
 
   async createProduct({ product }) {

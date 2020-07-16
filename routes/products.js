@@ -123,7 +123,7 @@ module.exports = (app, nextMain) => {
    * @code {403} si no es ni admin
    * @code {404} si el producto con `productId` indicado no existe
    */
-  app.delete('/products/:productId', deleteProduct);
+  app.delete('/products/:productId', requireAdmin, deleteProduct);
 
   nextMain();
 };
