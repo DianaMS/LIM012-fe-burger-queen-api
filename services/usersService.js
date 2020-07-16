@@ -16,12 +16,16 @@ class UsersService {
   }
 
   async getUser({ userId }) {
-    const user = await this.mongoDB.getOne(this.collection, userId);
-    return user || null;
+    try {
+      const user = await this.mongoDB.getOne(this.collection, userId);
+      return user || null;
+    } catch (error) {
+      return null;
+    }
   }
 
-  async getUserAuth({ email }) {
-    const userAuth = await this.mongoDB.getAuth(this.collection, email);
+  async getUserByEmail({ email }) {
+    const userAuth = await this.mongoDB.getUserByEmail(this.collection, email);
     return userAuth || null;
   }
 
