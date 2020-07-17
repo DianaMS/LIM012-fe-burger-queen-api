@@ -6,6 +6,30 @@ const ordersService = new OrdersService();
 const usersService = new UsersService();
 const productsService = new ProductsService();
 
+// const productDetails = async (products, next) => {
+//   const orderedProducts = [];
+//   for (let i = 0; i < products; i += 1) {
+//     const { productId } = products[i];
+//     // eslint-disable-next-line no-await-in-loop
+//     const objectProduct = await productsService.getProduct({ productId });
+//     if (objectProduct === null) {
+//       return next;
+//     }
+//     orderedProducts.push(objectProduct);
+//   }
+
+//   const productsAndQuantity = orderedProducts.map((product) => {
+//     const productFilter = products
+//       .filter((element) => element.productId === product._id.toString());
+//     return {
+//       product,
+//       qty: productFilter[0].qty,
+//     };
+//   });
+
+//   return productsAndQuantity;
+// };
+
 module.exports = {
   getOrders: async (req, resp, next) => {
     const { tags } = req.query;
@@ -103,11 +127,13 @@ module.exports = {
   postOrder: async (req, resp, next) => {
     const { body: order } = req;
     const { userId } = order;
+    console.log(order);
     const productsArray = order.products;
     const orderedProducts = [];
 
     try {
       const objectUserId = await usersService.getUser({ userId });
+      console.log(objectUserId);
 
       if (!objectUserId || objectUserId === null || productsArray.length <= 0) {
         return next(400);
@@ -227,6 +253,9 @@ module.exports = {
       }
 
       const productsArray = orderObject.products;
+
+      // const productDetailsAndQuantity = await productDetails(productsArray, next(400));
+      // console.log(productDetailsAndQuantity);
       const orderedProducts = [];
 
       for (let i = 0; i < productsArray.length; i += 1) {
