@@ -15,6 +15,12 @@ class UsersService {
     return users || [];
   }
 
+  async getUsersPag({ tags }, skip, limit) {
+    const query = tags && { tags: { $in: tags } };
+    const users = await this.mongoDB.getForPagination(this.collection, query, skip, limit);
+    return users || [];
+  }
+
   async getUser({ userId }) {
     try {
       const user = await this.mongoDB.getOne(this.collection, userId);
