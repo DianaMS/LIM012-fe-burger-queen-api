@@ -1,13 +1,19 @@
 const ProductsService = require('../services/productsService');
+const { pagination } = require('./utils/pagination');
 
 const productsService = new ProductsService();
 
 module.exports = {
   getProducts: async (req, resp, next) => {
     const { tags } = req.query;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const page = parseInt(req.query.page, 10) || 1;
+    const skip = (limit * page) - limit;
+    
     try {
-      const products = await productsService.getProducts({ tags });
-      console.log(products)
+      const products = await productsService.getProductsPag({ tags }, skip, limit);
+      const totalProducts = await productsService.getProducts({ tags });
+      const header = pagination('products', page, limit, totalProducts.length);
       resp.status(200).json({
         data: products,
         message: 'products listed',
@@ -22,7 +28,7 @@ module.exports = {
     try {
       const product = await productsService.getProduct({ productId });
       console.log('response de getProduct', product)
-      console.log(productId)
+      console.log('ogm',productId)
       if (product === null) {
         return next(404);
       }

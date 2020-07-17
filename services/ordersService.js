@@ -15,6 +15,12 @@ class OrdersService {
     return orders || [];
   }
 
+  async getOrdersPag({ tags }, skip, limit) {
+    const query = tags && { tags: { $in: tags } };
+    const orders = await this.mongoDB.getForPagination(this.collection, query, skip, limit);
+    return orders || [];
+  }
+
   async getOrder({ orderId }) {
     try {
       const order = await this.mongoDB.getOne(this.collection, orderId);

@@ -1,6 +1,7 @@
 const OrdersService = require('../services/ordersService');
 const UsersService = require('../services/usersService');
 const ProductsService = require('../services/productsService');
+const { pagination } = require('./utils/pagination');
 
 const ordersService = new OrdersService();
 const usersService = new UsersService();
@@ -9,9 +10,17 @@ const productsService = new ProductsService();
 module.exports = {
   getOrders: async (req, resp, next) => {
     const { tags } = req.query;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const page = parseInt(req.query.page, 10) || 1;
+    const skip = (limit * page) - limit;
 
     try {
-      const orders = await ordersService.getOrders({ tags });
+      const orders = await ordersService.getOrdersPag({ tags }, skip, limit)
+      const ordersTotal = await ordersService.getOrders({ tags });
+      const headers = pagination('orders', page, limit, ordersTotal.length);
+      console.log('headers orders', headers);
+      console.log(ordersTotal.length)
+      console.log(orders)
       const allOrders = [];
 
       for (let i = 0; i < orders.length; i += 1) {

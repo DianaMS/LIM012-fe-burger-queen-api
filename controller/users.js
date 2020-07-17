@@ -1,6 +1,7 @@
 const bcrypt = require('bcrypt');
 const UsersService = require('../services/usersService');
 const validateEmail = require('./utils/validateEmail');
+const { pagination } = require('./utils/pagination');
 
 const usersService = new UsersService();
 
@@ -32,9 +33,16 @@ module.exports = {
   getUsers: async (req, resp, next) => {
     const { tags } = req.query;
     const dataUser = [];
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const page = parseInt(req.query.page, 10) || 1;
+    const skip = (limit * page) - limit; 
 
     try {
-      const users = await usersService.getUsers({ tags });
+      const users = await usersService.getUsersPag({tags}, skip, limit)
+      const totalUsers = await usersService.getUsers({ tags });
+      const header = pagination('users', page, limit, totalUsers.length);
+      console.log(totalUsers.length)
+      console.log(header)
       users.forEach((user) => {
         const detailsUser = {
           userId: user._id,

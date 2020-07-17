@@ -15,6 +15,12 @@ class ProductsService {
     return products || [];
   }
 
+  async getProductsPag({ tags }, skip, limit) {
+    const query = tags && { tags: { $in: tags } };
+    const products = await this.mongoDB.getForPagination(this.collection, query, skip, limit);
+    return products || [];
+  }
+
   async getProduct({ productId }) {
     try {
       const product = await this.mongoDB.getOne(this.collection, productId);
