@@ -43,7 +43,7 @@ module.exports = (app, nextMain) => {
         token,
       });
     } else {
-      resp.status(400).json({
+      resp.status(404).json({
         message: 'No existe el usuario',
       });
     }

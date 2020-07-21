@@ -66,6 +66,17 @@ module.exports = {
 
     try {
       const user = await usersService.getUser({ userId });
+      if (user === null) {
+        const byEmail = await usersService.getUserByEmail({ email: userId });
+        if (byEmail === null) {
+          return next(404);
+        }
+        resp.status(200).json({
+          userId: byEmail._id,
+          email: byEmail.email,
+          roles: byEmail.roles,
+        });
+      }
       resp.status(200).json({
         userId: user._id,
         email: user.email,
@@ -93,6 +104,11 @@ module.exports = {
       }
       const encryptPass = bcrypt.hashSync(user.password, 10);
       user.password = encryptPass;
+
+      if (user.roles === undefined || user.roles === null) {
+        user.roles = { admin: false };
+      }
+
       await usersService.createUser({ user });
       resp.status(200).json({
         userId: user._id,
