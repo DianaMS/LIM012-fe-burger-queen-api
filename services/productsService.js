@@ -27,7 +27,7 @@ class ProductsService {
       return product || null;
     } catch (error) {
       return null;
-    }    
+    }
   }
 
   async createProduct({ product }) {

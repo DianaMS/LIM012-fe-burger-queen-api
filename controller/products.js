@@ -9,11 +9,11 @@ module.exports = {
     const limit = parseInt(req.query.limit, 10) || 10;
     const page = parseInt(req.query.page, 10) || 1;
     const skip = (limit * page) - limit;
-    
+
     try {
       const products = await productsService.getProductsPag({ tags }, skip, limit);
       const totalProducts = await productsService.getProducts({ tags });
-      const header = pagination('products', page, limit, totalProducts.length);
+      pagination('products', page, limit, totalProducts.length);
       resp.status(200).json({
         data: products,
         message: 'products listed',
@@ -27,8 +27,8 @@ module.exports = {
     const { productId } = req.params;
     try {
       const product = await productsService.getProduct({ productId });
-      console.log('response de getProduct', product)
-      console.log('ogm',productId)
+      console.log('response de getProduct', product);
+      console.log('ogm', productId);
       if (product === null) {
         return next(404);
       }
@@ -49,8 +49,8 @@ module.exports = {
     }
 
     try {
-      const createProduct = await productsService.createProduct({ product });
-       resp.status(200).json({
+      await productsService.createProduct({ product });
+      resp.status(200).json({
         id: product._id,
         name: product.name,
         price: product.price,
@@ -73,14 +73,14 @@ module.exports = {
       return next(400);
     }
 
-    const validateProductId = await productsService.getProduct({productId});
+    const validateProductId = await productsService.getProduct({ productId });
     if (!validateProductId) {
       return next(404);
     }
 
     try {
       const updateProduct = await productsService.updateProduct({ productId, product });
-      console.log(updateProduct)
+      console.log(updateProduct);
       resp.status(200).json({
         id: updateProduct,
         name: product.name,
@@ -99,7 +99,7 @@ module.exports = {
     const { productId } = req.params;
     const { body: product } = req;
     product.dateEntry = new Date();
-    
+
     const checkProduct = await productsService.getProduct({ productId });
     if (!checkProduct) {
       return next(404);

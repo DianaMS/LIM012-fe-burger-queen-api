@@ -80,7 +80,6 @@ const checkAdminCredentials = () => fetch('/auth', {
     if (resp.status !== 200) {
       throw new Error('Could not authenticate as admin user');
     }
-
     return resp.json();
   })
   .then(({ token }) => Object.assign(__e2e, { adminToken: token }));
@@ -113,6 +112,7 @@ module.exports = () => new Promise((resolve, reject) => {
 
   console.info('Staring local server...');
   const child = spawn('npm', ['start', process.env.PORT || 8888], {
+    shell: process.platform === 'win32',
     cwd: path.resolve(__dirname, '../'),
     stdio: ['ignore', 'pipe', 'pipe'],
   });
