@@ -19,12 +19,15 @@ class MongoLib {
   }
 
   getForPagination(collection, query, skip, limit) {
-    return this.conection().then((db) => db.collection(collection).find(query).skip(skip).limit(limit).toArray());
+    return this.conection().then((db) => db.collection(collection)
+      .find(query).skip(skip).limit(limit)
+      .toArray());
   }
 
   getAll(collection, query) {
     return this.conection().then((db) => db.collection(collection).find(query).toArray());
   }
+
   getOne(collection, id) {
     return this.conection().then((db) => db.collection(collection).findOne({ _id: ObjectId(id) }));
   }

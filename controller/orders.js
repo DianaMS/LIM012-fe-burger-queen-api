@@ -39,12 +39,12 @@ module.exports = {
     const skip = (limit * page) - limit;
 
     try {
-      const orders = await ordersService.getOrdersPag({ tags }, skip, limit)
+      const orders = await ordersService.getOrdersPag({ tags }, skip, limit);
       const ordersTotal = await ordersService.getOrders({ tags });
       const headers = pagination('orders', page, limit, ordersTotal.length);
       console.log('headers orders', headers);
-      console.log(ordersTotal.length)
-      console.log(orders)
+      console.log(ordersTotal.length);
+      console.log(orders);
       const allOrders = [];
 
       for (let i = 0; i < orders.length; i += 1) {

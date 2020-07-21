@@ -35,14 +35,14 @@ module.exports = {
     const dataUser = [];
     const limit = parseInt(req.query.limit, 10) || 10;
     const page = parseInt(req.query.page, 10) || 1;
-    const skip = (limit * page) - limit; 
+    const skip = (limit * page) - limit;
 
     try {
-      const users = await usersService.getUsersPag({tags}, skip, limit)
+      const users = await usersService.getUsersPag({ tags }, skip, limit);
       const totalUsers = await usersService.getUsers({ tags });
       const header = pagination('users', page, limit, totalUsers.length);
-      console.log(totalUsers.length)
-      console.log(header)
+      console.log(totalUsers.length);
+      console.log(header);
       users.forEach((user) => {
         const detailsUser = {
           userId: user._id,
@@ -91,7 +91,8 @@ module.exports = {
       if (!user.email || !user.password) {
         return next(400);
       }
-
+      const encryptPass = bcrypt.hashSync(user.password, 10);
+      user.password = encryptPass;
       await usersService.createUser({ user });
       resp.status(200).json({
         userId: user._id,
