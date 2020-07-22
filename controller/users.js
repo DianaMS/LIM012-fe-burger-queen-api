@@ -32,6 +32,7 @@ module.exports = {
   },
 
   getUsers: async (req, resp, next) => {
+    console.log('hola');
     const { tags } = req.query;
     const dataUser = [];
     const limit = parseInt(req.query.limit, 10) || 10;
@@ -74,7 +75,7 @@ module.exports = {
     // }
     try {
       const user = await usersService.getUser({ userId });
-      if(user === null) {
+      if (user === null) {
         const byEmail = await usersService.getUserByEmail({ email: userId });
         if (byEmail === null) {
           return next(404);
@@ -112,6 +113,11 @@ module.exports = {
       }
       const encryptPass = bcrypt.hashSync(user.password, 10);
       user.password = encryptPass;
+
+      if (user.roles === undefined || user.roles === null) {
+        user.roles = { admin: false };
+      }
+
       await usersService.createUser({ user });
       resp.status(200).json({
         userId: user._id,
@@ -129,26 +135,35 @@ module.exports = {
     const { body: user } = req;
   
     try {
-      const user = await usersService.getUser({ userId });
-      if(user === null) {
-        const byEmail = await usersService.getUserByEmail({ email: userId });
-        if (byEmail === null) {
+      const userObjeto = await usersService.getUser({ userId });
+      if (userObjeto === null) {
+        const byEmailObject = await usersService.getUserByEmail({ email: userId });
+        if (byEmailObject === null) {
           return next(404);
         }
+        if (!validateEmail(user.email)) {
+          return next(400);
+        }
+        const encryptPass = bcrypt.hashSync(user.password, 10);
+        user.password = encryptPass;
+
+        const updateUserByEmail = await usersService
+          .updateUser({ userId: byEmailObject._id, user });
         resp.status(200).json({
-          userId: byEmail._id,
-          email: byEmail.email,
-          roles: byEmail.roles,
+          userId: updateUserByEmail,
+          email: user.email,
+          roles: user.roles,
+          message: 'user update',
         });
       }
-      
+
       if (!validateEmail(user.email)) {
         return next(400);
       }
-      const objectUser = await usersService.getUser({ userId });
-      if (objectUser === null) {
-        return next(404);
-      }
+
+      const encryptPass = bcrypt.hashSync(user.password, 10);
+      user.password = encryptPass;
+
       const updateUser = await usersService.updateUser({ userId, user });
       resp.status(200).json({
         userId: updateUser,
@@ -164,27 +179,26 @@ module.exports = {
   deleteUser: async (req, resp, next) => {
     const { userId } = req.params;
     try {
-            const user = await usersService.getUser({ userId });
-      if(user === null) {
+      const user = await usersService.getUser({ userId });
+      if (user === null) {
         const byEmail = await usersService.getUserByEmail({ email: userId });
         if (byEmail === null) {
           return next(404);
         }
+        const userDeleteByEmail = await usersService.deleteUser({ userId: byEmail._id });
         resp.status(200).json({
-          userId: byEmail._id,
+          userId: userDeleteByEmail,
           email: byEmail.email,
           roles: byEmail.roles,
+          message: 'user delete',
         });
       }
-      const objectUser = await usersService.getUser({ userId });
-      if (objectUser === null) {
-        return next(404);
-      }
+
       const userDelete = await usersService.deleteUser({ userId });
       resp.status(200).json({
         userId: userDelete,
-        email: objectUser.email,
-        roles: objectUser.roles,
+        email: user.email,
+        roles: user.roles,
         message: 'user delete',
       });
     } catch (error) {

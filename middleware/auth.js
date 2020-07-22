@@ -41,6 +41,8 @@ module.exports.isAuthenticated = (req) => {
 
 
 module.exports.isAdmin = (req) => {
+  console.log('----------------');
+  console.log(req.userDecoded);
   if (req.userDecoded.userRol) {
     return true;
   }
