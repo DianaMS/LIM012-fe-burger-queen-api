@@ -25,7 +25,8 @@ module.exports = {
       }
     } catch (error) {
       // eslint-disable-next-line no-console
-      console.log('No se pudo crear un usuario administrador', error);
+      next(error);
+      // console.log('No se pudo crear un usuario administrador', error);
     }
     next();
   },
@@ -41,8 +42,8 @@ module.exports = {
       const users = await usersService.getUsersPag({ tags }, skip, limit);
       const totalUsers = await usersService.getUsers({ tags });
       const header = pagination('users', page, limit, totalUsers.length);
-      console.log(totalUsers.length);
-      console.log(header);
+      // console.log(totalUsers.length);
+      // console.log(header);
       users.forEach((user) => {
         const detailsUser = {
           userId: user._id,
@@ -63,9 +64,27 @@ module.exports = {
 
   getUser: async (req, resp, next) => {
     const { userId } = req.params;
-
+    // let user, query;
+    // if (!validateEmail(userId)) {
+    //   query = { userId };
+    //   user = await usersService.getUser(query)
+    // } else {
+    //   query = { email: userId };
+    //   user = await usersService.getUserByEmail(query);
+    // }
     try {
       const user = await usersService.getUser({ userId });
+      if(user === null) {
+        const byEmail = await usersService.getUserByEmail({ email: userId });
+        if (byEmail === null) {
+          return next(404);
+        }
+        resp.status(200).json({
+          userId: byEmail._id,
+          email: byEmail.email,
+          roles: byEmail.roles,
+        });
+      }
       resp.status(200).json({
         userId: user._id,
         email: user.email,
@@ -108,8 +127,21 @@ module.exports = {
   putUser: async (req, resp, next) => {
     const { userId } = req.params;
     const { body: user } = req;
-
+  
     try {
+      const user = await usersService.getUser({ userId });
+      if(user === null) {
+        const byEmail = await usersService.getUserByEmail({ email: userId });
+        if (byEmail === null) {
+          return next(404);
+        }
+        resp.status(200).json({
+          userId: byEmail._id,
+          email: byEmail.email,
+          roles: byEmail.roles,
+        });
+      }
+      
       if (!validateEmail(user.email)) {
         return next(400);
       }
@@ -131,8 +163,19 @@ module.exports = {
 
   deleteUser: async (req, resp, next) => {
     const { userId } = req.params;
-
     try {
+            const user = await usersService.getUser({ userId });
+      if(user === null) {
+        const byEmail = await usersService.getUserByEmail({ email: userId });
+        if (byEmail === null) {
+          return next(404);
+        }
+        resp.status(200).json({
+          userId: byEmail._id,
+          email: byEmail.email,
+          roles: byEmail.roles,
+        });
+      }
       const objectUser = await usersService.getUser({ userId });
       if (objectUser === null) {
         return next(404);
