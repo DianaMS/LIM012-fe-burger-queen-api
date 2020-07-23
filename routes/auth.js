@@ -37,7 +37,7 @@ module.exports = (app, nextMain) => {
       const token = jwt.sign({ userId, userEmail, userRol }, secret, {
         expiresIn: 60 * 60 * 24,
       });
-
+      console.log('token', token);
       resp.status(200).json({
         email,
         token,

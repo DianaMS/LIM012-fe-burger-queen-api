@@ -27,8 +27,6 @@ module.exports = {
     const { productId } = req.params;
     try {
       const product = await productsService.getProduct({ productId });
-      console.log('response de getProduct', product);
-      console.log('ogm', productId);
       if (product === null) {
         return next(404);
       }
@@ -80,7 +78,6 @@ module.exports = {
 
     try {
       const updateProduct = await productsService.updateProduct({ productId, product });
-      console.log(updateProduct);
       resp.status(200).json({
         id: updateProduct,
         name: product.name,

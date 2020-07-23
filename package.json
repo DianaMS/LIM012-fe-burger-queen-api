@@ -6,6 +6,9 @@
   "engines": {
     "node": ">=10"
   },
+  "jest": {
+    "testTimeout": 30000
+  },
   "scripts": {
     "pretest": "eslint .",
     "start": "node index.js",

@@ -31,7 +31,6 @@ module.exports = {
   },
 
   getUsers: async (req, resp, next) => {
-    console.log('hola');
     const { tags } = req.query;
     const dataUser = [];
     const limit = parseInt(req.query.limit, 10) || 10;
@@ -41,9 +40,7 @@ module.exports = {
     try {
       const users = await usersService.getUsersPag({ tags }, skip, limit);
       const totalUsers = await usersService.getUsers({ tags });
-      const header = pagination('users', page, limit, totalUsers.length);
-      console.log(totalUsers.length);
-      console.log(header);
+      pagination('users', page, limit, totalUsers.length);
       users.forEach((user) => {
         const detailsUser = {
           userId: user._id,
@@ -72,12 +69,13 @@ module.exports = {
         if (byEmail === null) {
           return next(404);
         }
-        resp.status(200).json({
+        return resp.status(200).json({
           userId: byEmail._id,
           email: byEmail.email,
           roles: byEmail.roles,
         });
       }
+
       resp.status(200).json({
         userId: user._id,
         email: user.email,
@@ -141,7 +139,7 @@ module.exports = {
 
         const updateUserByEmail = await usersService
           .updateUser({ userId: byEmailObject._id, user });
-        resp.status(200).json({
+        return resp.status(200).json({
           userId: updateUserByEmail,
           email: user.email,
           roles: user.roles,
@@ -179,7 +177,7 @@ module.exports = {
           return next(404);
         }
         const userDeleteByEmail = await usersService.deleteUser({ userId: byEmail._id });
-        resp.status(200).json({
+        return resp.status(200).json({
           userId: userDeleteByEmail,
           email: byEmail.email,
           roles: byEmail.roles,
