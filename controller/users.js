@@ -32,7 +32,6 @@ module.exports = {
   },
 
   getUsers: async (req, resp, next) => {
-    console.log('hola');
     const { tags } = req.query;
     const dataUser = [];
     const limit = parseInt(req.query.limit, 10) || 10;
@@ -42,12 +41,11 @@ module.exports = {
     try {
       const users = await usersService.getUsersPag({ tags }, skip, limit);
       const totalUsers = await usersService.getUsers({ tags });
-      const header = pagination('users', page, limit, totalUsers.length);
-      // console.log(totalUsers.length);
-      // console.log(header);
+
+      pagination('users', page, limit, totalUsers.length);
       users.forEach((user) => {
         const detailsUser = {
-          userId: user._id,
+          _id: user._id,
           email: user.email,
           roles: user.roles,
         };
@@ -55,9 +53,7 @@ module.exports = {
         dataUser.push(detailsUser);
       });
 
-      resp.status(200).json({
-        data: dataUser,
-      });
+      resp.status(200).json(dataUser);
     } catch (error) {
       next(error);
     }
@@ -65,31 +61,26 @@ module.exports = {
 
   getUser: async (req, resp, next) => {
     const { userId } = req.params;
-    // let user, query;
-    // if (!validateEmail(userId)) {
-    //   query = { userId };
-    //   user = await usersService.getUser(query)
-    // } else {
-    //   query = { email: userId };
-    //   user = await usersService.getUserByEmail(query);
-    // }
+    const decodedtoken = req.userDecoded;
+
     try {
-      const user = await usersService.getUser({ userId });
-      if (user === null) {
-        const byEmail = await usersService.getUserByEmail({ email: userId });
-        if (byEmail === null) {
+      let userObject = null;
+      userObject = await usersService.getUser({ userId });
+      if (userObject === null) {
+        userObject = await usersService.getUserByEmail({ email: userId });
+        if (userObject === null) {
           return next(404);
         }
-        resp.status(200).json({
-          userId: byEmail._id,
-          email: byEmail.email,
-          roles: byEmail.roles,
-        });
       }
-      resp.status(200).json({
-        userId: user._id,
-        email: user.email,
-        roles: user.roles,
+
+      if (userObject._id.toString() !== decodedtoken.userId && !decodedtoken.userRol.admin) {
+        return next(403);
+      }
+
+      return resp.status(200).json({
+        _id: userObject._id,
+        email: userObject.email,
+        roles: userObject.roles,
       });
     } catch (error) {
       next(error);
@@ -108,7 +99,7 @@ module.exports = {
         return next(403);
       }
 
-      if (!user.email || !user.password) {
+      if ((!user.email || !user.password) || (user.password.length < 4)) {
         return next(400);
       }
       const encryptPass = bcrypt.hashSync(user.password, 10);
@@ -118,9 +109,9 @@ module.exports = {
         user.roles = { admin: false };
       }
 
-      await usersService.createUser({ user });
+      const createUserId = await usersService.createUser({ user });
       resp.status(200).json({
-        userId: user._id,
+        _id: createUserId,
         email: user.email,
         roles: user.roles,
         message: 'user created',
@@ -133,42 +124,52 @@ module.exports = {
   putUser: async (req, resp, next) => {
     const { userId } = req.params;
     const { body: user } = req;
-  
+    const decodedtoken = req.userDecoded;
+
     try {
-      const userObjeto = await usersService.getUser({ userId });
-      if (userObjeto === null) {
-        const byEmailObject = await usersService.getUserByEmail({ email: userId });
-        if (byEmailObject === null) {
-          return next(404);
-        }
+      let userObject = null;
+
+      userObject = await usersService.getUser({ userId });
+      if (userObject === null) {
+        userObject = await usersService.getUserByEmail({ email: userId });
+      }
+      if (userObject === null) {
+        return next(404);
+      }
+
+      if (userObject._id.toString() !== decodedtoken.userId && !decodedtoken.userRol.admin) {
+        return next(403);
+      }
+
+      if (user.email) {
         if (!validateEmail(user.email)) {
           return next(400);
         }
+        userObject.email = user.email;
+      }
+
+      if (user.password) {
+        if (user.password.length < 4) {
+          return next(400);
+        }
         const encryptPass = bcrypt.hashSync(user.password, 10);
-        user.password = encryptPass;
-
-        const updateUserByEmail = await usersService
-          .updateUser({ userId: byEmailObject._id, user });
-        resp.status(200).json({
-          userId: updateUserByEmail,
-          email: user.email,
-          roles: user.roles,
-          message: 'user update',
-        });
+        userObject.password = encryptPass;
       }
 
-      if (!validateEmail(user.email)) {
-        return next(400);
+      if (user.roles) {
+        if (!decodedtoken.userRol.admin && decodedtoken.userRol.admin !== user.roles.admin) {
+          return next(403);
+        }
+        userObject.roles = user.roles;
       }
 
-      const encryptPass = bcrypt.hashSync(user.password, 10);
-      user.password = encryptPass;
+      const updateUser = await usersService
+        .updateUser({ userId: userObject._id, user: userObject });
 
-      const updateUser = await usersService.updateUser({ userId, user });
       resp.status(200).json({
-        userId: updateUser,
-        email: user.email,
-        roles: user.roles,
+        _id: updateUser,
+        email: userObject.email,
+        roles: userObject.roles,
         message: 'user update',
       });
     } catch (error) {
@@ -178,27 +179,28 @@ module.exports = {
 
   deleteUser: async (req, resp, next) => {
     const { userId } = req.params;
+    const decodedtoken = req.userDecoded;
+
     try {
-      const user = await usersService.getUser({ userId });
-      if (user === null) {
-        const byEmail = await usersService.getUserByEmail({ email: userId });
-        if (byEmail === null) {
+      let userObject = null;
+      userObject = await usersService.getUser({ userId });
+      if (userObject === null) {
+        userObject = await usersService.getUserByEmail({ email: userId });
+        if (userObject === null) {
           return next(404);
         }
-        const userDeleteByEmail = await usersService.deleteUser({ userId: byEmail._id });
-        resp.status(200).json({
-          userId: userDeleteByEmail,
-          email: byEmail.email,
-          roles: byEmail.roles,
-          message: 'user delete',
-        });
       }
 
-      const userDelete = await usersService.deleteUser({ userId });
+      if (userObject._id.toString() !== decodedtoken.userId && !decodedtoken.userRol.admin) {
+        return next(403);
+      }
+
+      const userDelete = await usersService.deleteUser({ userId: userObject._id });
+
       resp.status(200).json({
-        userId: userDelete,
-        email: user.email,
-        roles: user.roles,
+        _id: userDelete,
+        email: userObject.email,
+        roles: userObject.roles,
         message: 'user delete',
       });
     } catch (error) {

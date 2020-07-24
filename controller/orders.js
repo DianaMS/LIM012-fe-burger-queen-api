@@ -41,10 +41,7 @@ module.exports = {
     try {
       const orders = await ordersService.getOrdersPag({ tags }, skip, limit);
       const ordersTotal = await ordersService.getOrders({ tags });
-      const headers = pagination('orders', page, limit, ordersTotal.length);
-      console.log('headers orders', headers);
-      console.log(ordersTotal.length);
-      console.log(orders);
+      pagination('orders', page, limit, ordersTotal.length);
       const allOrders = [];
 
       for (let i = 0; i < orders.length; i += 1) {
@@ -70,7 +67,7 @@ module.exports = {
         });
 
         const detailsOrder = {
-          orderId: orders[i]._id,
+          _id: orders[i]._id.toString(),
           userId: orders[i].userId,
           client: orders[i].client,
           products: productsAndQuantity,
@@ -82,9 +79,7 @@ module.exports = {
         allOrders.push(detailsOrder);
       }
 
-      resp.status(200).json({
-        orders: allOrders,
-      });
+      resp.status(200).json(allOrders);
     } catch (error) {
       next(error);
     }
@@ -120,7 +115,7 @@ module.exports = {
       });
 
       resp.status(200).json({
-        orderId: order._id,
+        _id: order._id.toString(),
         userId: order.userId,
         client: order.client,
         products: productsAndQuantity,
@@ -136,15 +131,13 @@ module.exports = {
   postOrder: async (req, resp, next) => {
     const { body: order } = req;
     const { userId } = order;
-    console.log(order);
     const productsArray = order.products;
     const orderedProducts = [];
 
     try {
       const objectUserId = await usersService.getUser({ userId });
-      console.log(objectUserId);
 
-      if (!objectUserId || objectUserId === null || productsArray.length <= 0) {
+      if (!objectUserId || objectUserId === null || productsArray.length <= 0 || !order.client) {
         return next(400);
       }
 
@@ -174,8 +167,8 @@ module.exports = {
         };
       });
 
-      resp.status(201).json({
-        orderId,
+      resp.status(200).json({
+        _id: orderId.toString(),
         userId: createOrderObject.userId,
         client: createOrderObject.client,
         products: productsAndQuantity,
@@ -204,7 +197,7 @@ module.exports = {
       }
 
       if (orderStatus !== 'pending' && orderStatus !== 'canceled'
-          && orderStatus !== 'delivering' && orderStatus !== 'delivered') {
+          && orderStatus !== 'delivering' && orderStatus !== 'delivered' && orderStatus !== 'preparing') {
         return next(400);
       }
 
@@ -238,7 +231,7 @@ module.exports = {
       });
 
       resp.status(200).json({
-        orderId: objectUpdateOrder._id,
+        _id: objectUpdateOrder._id.toString(),
         userId: objectUpdateOrder.userId,
         client: objectUpdateOrder.client,
         products: productsAndQuantity,
@@ -286,7 +279,7 @@ module.exports = {
       await ordersService.deleteOrder({ orderId });
 
       resp.status(200).json({
-        orderId: orderObject._id,
+        _id: orderObject._id.toString(),
         userId: orderObject.userId,
         client: orderObject.client,
         products: productsAndQuantity,

@@ -9,15 +9,27 @@ module.exports = {
     const limit = parseInt(req.query.limit, 10) || 10;
     const page = parseInt(req.query.page, 10) || 1;
     const skip = (limit * page) - limit;
+    const dataProducts = [];
 
     try {
       const products = await productsService.getProductsPag({ tags }, skip, limit);
       const totalProducts = await productsService.getProducts({ tags });
       pagination('products', page, limit, totalProducts.length);
-      resp.status(200).json({
-        data: products,
-        message: 'products listed',
+
+      products.forEach((product) => {
+        const detailProduct = {
+          _id: product._id.toString(),
+          name: product.name,
+          price: product.price,
+          image: product.image,
+          type: product.type,
+          dataEntry: product.dataEntry,
+        };
+
+        dataProducts.push(detailProduct);
       });
+
+      resp.status(200).json(dataProducts);
     } catch (error) {
       next(error);
     }
@@ -27,14 +39,16 @@ module.exports = {
     const { productId } = req.params;
     try {
       const product = await productsService.getProduct({ productId });
-      console.log('response de getProduct', product);
-      console.log('ogm', productId);
       if (product === null) {
         return next(404);
       }
       resp.status(200).json({
-        data: product,
-        message: 'product retrieved',
+        _id: product._id.toString(),
+        name: product.name,
+        price: product.price,
+        image: product.image,
+        type: product.type,
+        dataEntry: product.dataEntry,
       });
     } catch (error) {
       next(error);
@@ -43,20 +57,20 @@ module.exports = {
 
   postProduct: async (req, resp, next) => {
     const { body: product } = req;
-    product.dateEntry = new Date();
-    if (!req.body.name || !req.body.price) {
+    product.dataEntry = new Date();
+    if (!req.body.name || !req.body.price || typeof req.body.price !== 'number') {
       return next(400);
     }
 
     try {
-      await productsService.createProduct({ product });
+      const createProduct = await productsService.createProduct({ product });
       resp.status(200).json({
-        id: product._id,
+        _id: createProduct.toString(),
         name: product.name,
         price: product.price,
         image: product.image,
         type: product.type,
-        date: product.dateEntry,
+        date: product.dataEntry,
         message: 'product created',
       });
     } catch (error) {
@@ -67,9 +81,9 @@ module.exports = {
   putProduct: async (req, resp, next) => {
     const { productId } = req.params;
     const { body: product } = req;
-    product.dateEntry = new Date();
+    product.dataEntry = new Date();
 
-    if (!req.body.name && !req.body.price && !req.body.image && !req.body.type) {
+    if ((!req.body.name && !req.body.price && !req.body.image && !req.body.type) || (typeof req.body.price !== 'number')) {
       return next(400);
     }
 
@@ -80,14 +94,13 @@ module.exports = {
 
     try {
       const updateProduct = await productsService.updateProduct({ productId, product });
-      console.log(updateProduct);
       resp.status(200).json({
-        id: updateProduct,
+        _id: updateProduct.toString(),
         name: product.name,
         price: product.price,
         image: product.image,
         type: product.type,
-        date: product.dateEntry,
+        dataEntry: product.dataEntry,
         message: 'product update',
       });
     } catch (error) {
@@ -98,7 +111,7 @@ module.exports = {
   deleteProduct: async (req, resp, next) => {
     const { productId } = req.params;
     const { body: product } = req;
-    product.dateEntry = new Date();
+    product.dataEntry = new Date();
 
     const checkProduct = await productsService.getProduct({ productId });
     if (!checkProduct) {
@@ -108,12 +121,12 @@ module.exports = {
     try {
       const productDelete = await productsService.deleteProduct({ productId });
       resp.status(200).json({
-        id: productDelete,
+        _id: productDelete.toString(),
         name: product.name,
         price: product.price,
         image: product.image,
         type: product.type,
-        date: product.dateEntry,
+        date: product.dataEntry,
         message: 'product delete',
       });
     } catch (error) {

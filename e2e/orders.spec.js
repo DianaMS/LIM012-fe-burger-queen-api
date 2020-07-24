@@ -1,5 +1,3 @@
-const { response } = require("express");
-
 const {
   fetch,
   fetchAsTestUser,
@@ -43,7 +41,7 @@ describe('POST /orders', () => {
       })
       .then(([product, user]) => fetchAsTestUser('/orders', {
         method: 'POST',
-        body: { products: [{ productId: product._id, qty: 5, client: 'client' }], userId: user._id },
+        body: { products: [{ productId: product._id, qty: 5 }], client: 'client', userId: user._id },
       }))
       .then((resp) => {
         expect(resp.status).toBe(200);
@@ -108,7 +106,6 @@ describe('GET /orders', () => {
       fetchAsTestUser('/users/test@test.test'),
     ])
       .then((responses) => {
-        console.log('Aqui console: ', responses);
         expect(responses[0].status).toBe(200);
         expect(responses[1].status).toBe(200);
         return Promise.all([responses[0].json(), responses[1].json()]);
