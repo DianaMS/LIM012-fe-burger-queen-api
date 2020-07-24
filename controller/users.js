@@ -141,6 +141,10 @@ module.exports = {
         return next(403);
       }
 
+      if (!user.email && !user.password && !user.roles) {
+        return next(400);
+      }
+
       if (user.email) {
         if (!validateEmail(user.email)) {
           return next(400);
