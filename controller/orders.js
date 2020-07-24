@@ -41,10 +41,7 @@ module.exports = {
     try {
       const orders = await ordersService.getOrdersPag({ tags }, skip, limit);
       const ordersTotal = await ordersService.getOrders({ tags });
-      const headers = pagination('orders', page, limit, ordersTotal.length);
-      console.log('headers orders', headers);
-      console.log(ordersTotal.length);
-      console.log(orders);
+      pagination('orders', page, limit, ordersTotal.length);
       const allOrders = [];
 
       for (let i = 0; i < orders.length; i += 1) {
@@ -136,13 +133,11 @@ module.exports = {
   postOrder: async (req, resp, next) => {
     const { body: order } = req;
     const { userId } = order;
-    console.log(order);
     const productsArray = order.products;
     const orderedProducts = [];
 
     try {
       const objectUserId = await usersService.getUser({ userId });
-      console.log(objectUserId);
 
       if (!objectUserId || objectUserId === null || productsArray.length <= 0) {
         return next(400);

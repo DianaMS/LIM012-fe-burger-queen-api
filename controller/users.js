@@ -32,7 +32,6 @@ module.exports = {
   },
 
   getUsers: async (req, resp, next) => {
-    console.log('hola');
     const { tags } = req.query;
     const dataUser = [];
     const limit = parseInt(req.query.limit, 10) || 10;
@@ -42,9 +41,8 @@ module.exports = {
     try {
       const users = await usersService.getUsersPag({ tags }, skip, limit);
       const totalUsers = await usersService.getUsers({ tags });
-      const header = pagination('users', page, limit, totalUsers.length);
-      // console.log(totalUsers.length);
-      // console.log(header);
+      pagination('users', page, limit, totalUsers.length);
+
       users.forEach((user) => {
         const detailsUser = {
           userId: user._id,
@@ -55,9 +53,7 @@ module.exports = {
         dataUser.push(detailsUser);
       });
 
-      resp.status(200).json({
-        data: dataUser,
-      });
+      resp.send(dataUser);
     } catch (error) {
       next(error);
     }
@@ -133,7 +129,6 @@ module.exports = {
   putUser: async (req, resp, next) => {
     const { userId } = req.params;
     const { body: user } = req;
-  
     try {
       const userObjeto = await usersService.getUser({ userId });
       if (userObjeto === null) {

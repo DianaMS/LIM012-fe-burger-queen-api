@@ -15,8 +15,7 @@ module.exports = {
       const totalProducts = await productsService.getProducts({ tags });
       pagination('products', page, limit, totalProducts.length);
       resp.status(200).json({
-        data: products,
-        message: 'products listed',
+        products,
       });
     } catch (error) {
       next(error);
@@ -27,8 +26,7 @@ module.exports = {
     const { productId } = req.params;
     try {
       const product = await productsService.getProduct({ productId });
-      console.log('response de getProduct', product);
-      console.log('ogm', productId);
+
       if (product === null) {
         return next(404);
       }
@@ -47,10 +45,13 @@ module.exports = {
     if (!req.body.name || !req.body.price) {
       return next(400);
     }
-
+    console.log(product)
     try {
-      await productsService.createProduct({ product });
-      resp.status(200).json({
+      const createProduct = await productsService.createProduct({ product });
+      console.log('estoy en producto', createProduct);
+    console.log(typeof String(createProduct))
+    console.log(typeof String(createProduct).toString())
+      esp.status(200).json({
         id: product._id,
         name: product.name,
         price: product.price,
@@ -80,7 +81,6 @@ module.exports = {
 
     try {
       const updateProduct = await productsService.updateProduct({ productId, product });
-      console.log(updateProduct);
       resp.status(200).json({
         id: updateProduct,
         name: product.name,
