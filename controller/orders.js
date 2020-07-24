@@ -67,7 +67,7 @@ module.exports = {
         });
 
         const detailsOrder = {
-          orderId: orders[i]._id,
+          _id: orders[i]._id.toString(),
           userId: orders[i].userId,
           client: orders[i].client,
           products: productsAndQuantity,
@@ -79,9 +79,7 @@ module.exports = {
         allOrders.push(detailsOrder);
       }
 
-      resp.status(200).json({
-        orders: allOrders,
-      });
+      resp.status(200).json(allOrders);
     } catch (error) {
       next(error);
     }
@@ -117,7 +115,7 @@ module.exports = {
       });
 
       resp.status(200).json({
-        orderId: order._id,
+        _id: order._id.toString(),
         userId: order.userId,
         client: order.client,
         products: productsAndQuantity,
@@ -139,7 +137,7 @@ module.exports = {
     try {
       const objectUserId = await usersService.getUser({ userId });
 
-      if (!objectUserId || objectUserId === null || productsArray.length <= 0) {
+      if (!objectUserId || objectUserId === null || productsArray.length <= 0 || !order.client) {
         return next(400);
       }
 
@@ -169,8 +167,8 @@ module.exports = {
         };
       });
 
-      resp.status(201).json({
-        orderId,
+      resp.status(200).json({
+        _id: orderId.toString(),
         userId: createOrderObject.userId,
         client: createOrderObject.client,
         products: productsAndQuantity,
@@ -233,7 +231,7 @@ module.exports = {
       });
 
       resp.status(200).json({
-        orderId: objectUpdateOrder._id,
+        _id: objectUpdateOrder._id.toString(),
         userId: objectUpdateOrder.userId,
         client: objectUpdateOrder.client,
         products: productsAndQuantity,
@@ -281,7 +279,7 @@ module.exports = {
       await ordersService.deleteOrder({ orderId });
 
       resp.status(200).json({
-        orderId: orderObject._id,
+        _id: orderObject._id.toString(),
         userId: orderObject.userId,
         client: orderObject.client,
         products: productsAndQuantity,
