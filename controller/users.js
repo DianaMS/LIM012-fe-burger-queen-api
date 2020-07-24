@@ -5,18 +5,6 @@ const { pagination } = require('./utils/pagination');
 
 const usersService = new UsersService();
 
-// const isAdminForId = (user, decodedtoken, next) => {
-//   if (user._id.toString() !== decodedtoken.userId) {
-//     return next(403);
-//   }
-// };
-
-// const isAdminForEmail = (byEmail, decodedtoken, next) => {
-//   if (byEmail.email !== decodedtoken.userEmail) {
-//     return next(403);
-//   }
-// };
-
 module.exports = {
   initAdmin: async (app, next) => {
     try {
@@ -37,7 +25,8 @@ module.exports = {
       }
     } catch (error) {
       // eslint-disable-next-line no-console
-      console.log('No se pudo crear un usuario administrador', error);
+      next(error);
+      // console.log('No se pudo crear un usuario administrador', error);
     }
     next();
   },
@@ -52,6 +41,7 @@ module.exports = {
     try {
       const users = await usersService.getUsersPag({ tags }, skip, limit);
       const totalUsers = await usersService.getUsers({ tags });
+
       pagination('users', page, limit, totalUsers.length);
       users.forEach((user) => {
         const detailsUser = {
