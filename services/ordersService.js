@@ -9,15 +9,13 @@ class OrdersService {
     this.mongoDB = new MongoLib(dbName, dbUrl);
   }
 
-  async getOrders({ tags }) {
-    const query = tags && { tags: { $in: tags } };
-    const orders = await this.mongoDB.getAll(this.collection, query);
+  async getOrders() {
+    const orders = await this.mongoDB.getAll(this.collection);
     return orders || [];
   }
 
-  async getOrdersPag({ tags }, skip, limit) {
-    const query = tags && { tags: { $in: tags } };
-    const orders = await this.mongoDB.getForPagination(this.collection, query, skip, limit);
+  async getOrdersPag(skip, limit) {
+    const orders = await this.mongoDB.getForPagination(this.collection, skip, limit);
     return orders || [];
   }
 
