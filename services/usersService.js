@@ -9,15 +9,15 @@ class UsersService {
     this.mongoDB = new MongoLib(dbName, dbUrl);
   }
 
-  async getUsers({ tags }) {
-    const query = tags && { tags: { $in: tags } };
-    const users = await this.mongoDB.getAll(this.collection, query);
+  async getUsers() {
+    // const query = tags && { tags: { $in: tags } };
+    const users = await this.mongoDB.getAll(this.collection);
     return users || [];
   }
 
-  async getUsersPag({ tags }, skip, limit) {
-    const query = tags && { tags: { $in: tags } };
-    const users = await this.mongoDB.getForPagination(this.collection, query, skip, limit);
+  async getUsersPag(skip, limit) {
+    // const query = tags && { tags: { $in: tags } };
+    const users = await this.mongoDB.getForPagination(this.collection, skip, limit);
     return users || [];
   }
 

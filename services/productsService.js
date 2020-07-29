@@ -9,15 +9,15 @@ class ProductsService {
     this.mongoDB = new MongoLib(dbName, dbUrl);
   }
 
-  async getProducts({ tags }) {
-    const query = tags && { tags: { $in: tags } };
-    const products = await this.mongoDB.getAll(this.collection, query);
+  async getProducts() {
+    // const query = tags && { tags: { $in: tags } };
+    const products = await this.mongoDB.getAll(this.collection);
     return products || [];
   }
 
-  async getProductsPag({ tags }, skip, limit) {
-    const query = tags && { tags: { $in: tags } };
-    const products = await this.mongoDB.getForPagination(this.collection, query, skip, limit);
+  async getProductsPag(skip, limit) {
+    // const query = tags && { tags: { $in: tags } };
+    const products = await this.mongoDB.getForPagination(this.collection, skip, limit);
     return products || [];
   }
 
@@ -27,11 +27,13 @@ class ProductsService {
       return product || null;
     } catch (error) {
       return null;
-    }    
+    }
   }
 
   async createProduct({ product }) {
     const createProductId = await this.mongoDB.create(this.collection, product);
+    console.log(createProductId)
+    console.log('url', dbUrl)
     return createProductId;
   }
 
