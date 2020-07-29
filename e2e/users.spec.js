@@ -232,7 +232,9 @@ describe('PUT /users/:uid', () => {
   it('should fail with 403 when not admin tries to change own roles', () => (
     fetchAsTestUser('/users/test@test.test', {
       method: 'PUT',
-      body: { roles: { admin: true } },
+      body: {
+        roles: { admin: true },
+      },
     })
       .then((resp) => expect(resp.status).toBe(403))
   ));
@@ -240,7 +242,9 @@ describe('PUT /users/:uid', () => {
   it('should update user when own data (password change)', () => (
     fetchAsTestUser('/users/test@test.test', {
       method: 'PUT',
-      body: { password: 'garmadon' },
+      body: {
+        password: 'garmadon',
+      },
     })
       .then((resp) => expect(resp.status).toBe(200))
       .then(() => fetch('/auth', {
