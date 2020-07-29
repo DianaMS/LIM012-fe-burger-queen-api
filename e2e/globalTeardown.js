@@ -7,4 +7,5 @@ module.exports = () => new Promise((resolve) => {
 
   kill(global.__e2e.childProcessPid, 'SIGKILL', resolve);
   global.__e2e.childProcessPid = null;
+  global.__MONGOD__.stop();
 });
