@@ -7,7 +7,7 @@
     "node": ">=10"
   },
   "jest": {
-    "timeOut": "30000"
+    "testTimeout": 90000
   },
   "scripts": {
     "pretest": "eslint .",
