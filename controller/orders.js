@@ -2,46 +2,24 @@ const OrdersService = require('../services/ordersService');
 const UsersService = require('../services/usersService');
 const ProductsService = require('../services/productsService');
 const { pagination } = require('./utils/pagination');
+const { port } = require('../config');
 
 const ordersService = new OrdersService();
 const usersService = new UsersService();
 const productsService = new ProductsService();
 
-// const productDetails = async (products, next) => {
-//   const orderedProducts = [];
-//   for (let i = 0; i < products; i += 1) {
-//     const { productId } = products[i];
-//     // eslint-disable-next-line no-await-in-loop
-//     const objectProduct = await productsService.getProduct({ productId });
-//     if (objectProduct === null) {
-//       return next;
-//     }
-//     orderedProducts.push(objectProduct);
-//   }
-
-//   const productsAndQuantity = orderedProducts.map((product) => {
-//     const productFilter = products
-//       .filter((element) => element.productId === product._id.toString());
-//     return {
-//       product,
-//       qty: productFilter[0].qty,
-//     };
-//   });
-
-//   return productsAndQuantity;
-// };
-
 module.exports = {
   getOrders: async (req, resp, next) => {
-    const { tags } = req.query;
+    const url = `<${req.protocol}://${req.hostname}${port}${req.path}`;
     const limit = parseInt(req.query.limit, 10) || 10;
     const page = parseInt(req.query.page, 10) || 1;
     const skip = (limit * page) - limit;
 
     try {
-      const orders = await ordersService.getOrdersPag({ tags }, skip, limit);
-      const ordersTotal = await ordersService.getOrders({ tags });
-      pagination('orders', page, limit, ordersTotal.length);
+      const orders = await ordersService.getOrdersPag(skip, limit);
+      const ordersTotal = await ordersService.getOrders();
+      const headerPagination = pagination(url, page, limit, ordersTotal.length);
+      resp.set('link', headerPagination);
       const allOrders = [];
 
       for (let i = 0; i < orders.length; i += 1) {
@@ -79,9 +57,9 @@ module.exports = {
         allOrders.push(detailsOrder);
       }
 
-      resp.status(200).json(allOrders);
+      return resp.status(200).json(allOrders);
     } catch (error) {
-      next(error);
+      return next(error);
     }
   },
 
@@ -114,7 +92,7 @@ module.exports = {
         };
       });
 
-      resp.status(200).json({
+      return resp.status(200).json({
         _id: order._id.toString(),
         userId: order.userId,
         client: order.client,
@@ -124,7 +102,7 @@ module.exports = {
         dateProcessed: order.dateProcessed,
       });
     } catch (error) {
-      next(error);
+      return next(error);
     }
   },
 
@@ -167,7 +145,7 @@ module.exports = {
         };
       });
 
-      resp.status(200).json({
+      return resp.status(200).json({
         _id: orderId.toString(),
         userId: createOrderObject.userId,
         client: createOrderObject.client,
@@ -178,7 +156,7 @@ module.exports = {
         message: 'order created',
       });
     } catch (error) {
-      next(error);
+      return next(error);
     }
   },
 
@@ -230,7 +208,7 @@ module.exports = {
         };
       });
 
-      resp.status(200).json({
+      return resp.status(200).json({
         _id: objectUpdateOrder._id.toString(),
         userId: objectUpdateOrder.userId,
         client: objectUpdateOrder.client,
@@ -241,7 +219,7 @@ module.exports = {
         message: 'order update',
       });
     } catch (error) {
-      next(error);
+      return next(error);
     }
   },
 
@@ -278,7 +256,7 @@ module.exports = {
 
       await ordersService.deleteOrder({ orderId });
 
-      resp.status(200).json({
+      return resp.status(200).json({
         _id: orderObject._id.toString(),
         userId: orderObject.userId,
         client: orderObject.client,
@@ -289,7 +267,7 @@ module.exports = {
         message: 'order delete',
       });
     } catch (error) {
-      next(error);
+      return next(error);
     }
   },
 };

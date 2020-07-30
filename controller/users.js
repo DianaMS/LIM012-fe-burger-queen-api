@@ -24,38 +24,25 @@ module.exports = {
         await usersService.createUser({ user: adminUser });
       }
     } catch (error) {
-      // eslint-disable-next-line no-console
-      next(error);
-      // console.log('No se pudo crear un usuario administrador', error);
+      return next(error);
     }
     next();
   },
 
   getUsers: async (req, resp, next) => {
-    const { tags } = req.query;
-    const dataUser = [];
+    const url = `${req.protocol}://${req.get('host')}${req.path}`;
     const limit = parseInt(req.query.limit, 10) || 10;
     const page = parseInt(req.query.page, 10) || 1;
     const skip = (limit * page) - limit;
-
     try {
-      const users = await usersService.getUsersPag({ tags }, skip, limit);
-      const totalUsers = await usersService.getUsers({ tags });
+      const totalUsers = await usersService.getUsers();
+      const headerPagination = pagination(url, page, limit, totalUsers.length);
+      resp.set('link', headerPagination);
+      const users = await usersService.getUsersPag(skip, limit);
 
-      pagination('users', page, limit, totalUsers.length);
-      users.forEach((user) => {
-        const detailsUser = {
-          _id: user._id,
-          email: user.email,
-          roles: user.roles,
-        };
-
-        dataUser.push(detailsUser);
-      });
-
-      resp.status(200).json(dataUser);
+      return resp.status(200).json(users);
     } catch (error) {
-      next(error);
+      return next(error);
     }
   },
 
@@ -73,7 +60,7 @@ module.exports = {
         }
       }
 
-      if (userObject._id.toString() !== decodedtoken.userId && !decodedtoken.userRol.admin) {
+      if (userObject._id.toString() !== decodedtoken.userId.toString() && !decodedtoken.userRol.admin) {
         return next(403);
       }
 
@@ -83,7 +70,7 @@ module.exports = {
         roles: userObject.roles,
       });
     } catch (error) {
-      next(error);
+      return next(error);
     }
   },
 
@@ -110,14 +97,14 @@ module.exports = {
       }
 
       const createUserId = await usersService.createUser({ user });
-      resp.status(200).json({
+      return resp.status(200).json({
         _id: createUserId,
         email: user.email,
         roles: user.roles,
         message: 'user created',
       });
     } catch (error) {
-      next(error);
+      return next(error);
     }
   },
 
@@ -167,17 +154,21 @@ module.exports = {
         userObject.roles = user.roles;
       }
 
+      if (Object.keys(req.body).length === 0) {
+        return next(400);
+      }
+
       const updateUser = await usersService
         .updateUser({ userId: userObject._id, user: userObject });
 
-      resp.status(200).json({
+      return resp.status(200).json({
         _id: updateUser,
         email: userObject.email,
         roles: userObject.roles,
         message: 'user update',
       });
     } catch (error) {
-      next(error);
+      return next(error);
     }
   },
 
@@ -194,21 +185,21 @@ module.exports = {
           return next(404);
         }
       }
-
+      console.log('userObject', userObject)
       if (userObject._id.toString() !== decodedtoken.userId && !decodedtoken.userRol.admin) {
         return next(403);
       }
 
       const userDelete = await usersService.deleteUser({ userId: userObject._id });
 
-      resp.status(200).json({
+      return resp.status(200).json({
         _id: userDelete,
         email: userObject.email,
         roles: userObject.roles,
         message: 'user delete',
       });
     } catch (error) {
-      next(error);
+      return next(error);
     }
   },
 };

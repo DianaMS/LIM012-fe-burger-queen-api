@@ -18,14 +18,14 @@ class MongoLib {
     });
   }
 
-  getForPagination(collection, query, skip, limit) {
+  getForPagination(collection, skip, limit) {
     return this.conection().then((db) => db.collection(collection)
-      .find(query).skip(skip).limit(limit)
+      .find().skip(skip).limit(limit)
       .toArray());
   }
 
-  getAll(collection, query) {
-    return this.conection().then((db) => db.collection(collection).find(query).toArray());
+  getAll(collection) {
+    return this.conection().then((db) => db.collection(collection).find().toArray());
   }
 
   getOne(collection, id) {

@@ -70,6 +70,7 @@ describe('GET /products/:productid', () => {
         return resp.json();
       })
       .then((json) => {
+        console.log('line73', json)
         expect(Array.isArray(json)).toBe(true);
         expect(json.length > 0).toBe(true);
         json.forEach((product) => {
