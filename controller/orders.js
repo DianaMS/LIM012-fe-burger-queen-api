@@ -108,6 +108,7 @@ module.exports = {
 
   postOrder: async (req, resp, next) => {
     const { body: order } = req;
+    const decodedtoken = req.userDecoded;
     const { userId } = order;
     const productsArray = order.products;
     const orderedProducts = [];
@@ -115,7 +116,7 @@ module.exports = {
     try {
       const objectUserId = await usersService.getUser({ userId });
 
-      if (!objectUserId || objectUserId === null || productsArray.length <= 0 || !order.client) {
+      if (!objectUserId || objectUserId === null || productsArray.length <= 0) {
         return next(400);
       }
 
@@ -129,32 +130,38 @@ module.exports = {
         orderedProducts.push(objectProduct);
       }
 
+      if (!order.client) {
+        order.client = '';
+      }
       order.status = 'pending';
       order.dateEntry = new Date();
       order.dateProcessed = '';
-      const orderId = await ordersService.createOrder({ order });
-      const createOrderObject = await ordersService.getOrder({ orderId });
 
-      const productsAndQuantity = orderedProducts.map((product) => {
-        const productFilter = createOrderObject.products
-          .filter((element) => element.productId === product._id.toString());
+      if (decodedtoken.userRol.admin || decodedtoken.userRol) {
+        const orderId = await ordersService.createOrder({ order });
+        const createOrderObject = await ordersService.getOrder({ orderId });
 
-        return {
-          product,
-          qty: productFilter[0].qty,
-        };
-      });
+        const productsAndQuantity = orderedProducts.map((product) => {
+          const productFilter = createOrderObject.products
+            .filter((element) => element.productId === product._id.toString());
 
-      return resp.status(200).json({
-        _id: orderId.toString(),
-        userId: createOrderObject.userId,
-        client: createOrderObject.client,
-        products: productsAndQuantity,
-        status: createOrderObject.status,
-        dateEntry: createOrderObject.dateEntry,
-        dateProcessed: createOrderObject.dateProcessed,
-        message: 'order created',
-      });
+          return {
+            product,
+            qty: productFilter[0].qty,
+          };
+        });
+
+        return resp.status(200).json({
+          _id: orderId.toString(),
+          userId: createOrderObject.userId,
+          client: createOrderObject.client,
+          products: productsAndQuantity,
+          status: createOrderObject.status,
+          dateEntry: createOrderObject.dateEntry,
+          dateProcessed: createOrderObject.dateProcessed,
+          message: 'order created',
+        });
+      }
     } catch (error) {
       return next(error);
     }
@@ -169,6 +176,11 @@ module.exports = {
     const orderStatus = order.status;
 
     try {
+      const validateOrderId = await ordersService.getOrder({ orderId });
+      if (validateOrderId === null) {
+        return next(404);
+      }
+
       const objectUser = await usersService.getUser({ userId });
       if (!objectUser || objectUser === null || productsArray.length <= 0) {
         return next(400);
@@ -187,11 +199,6 @@ module.exports = {
           return next(400);
         }
         orderedProducts.push(objectProduct);
-      }
-
-      const validateOrderId = await ordersService.getOrder({ orderId });
-      if (validateOrderId === null) {
-        return next(404);
       }
 
       order.dateProcessed = new Date();
