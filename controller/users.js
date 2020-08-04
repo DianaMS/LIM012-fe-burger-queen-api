@@ -186,7 +186,7 @@ module.exports = {
           return next(404);
         }
       }
-      console.log('userObject', userObject);
+
       if (userObject._id.toString() !== decodedtoken.userId && !decodedtoken.userRol.admin) {
         return next(403);
       }
