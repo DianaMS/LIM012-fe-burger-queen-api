@@ -21,7 +21,6 @@ module.exports = (secret) => (req, resp, next) => {
     const usersService = new UsersService();
     const { userId } = decodedToken;
     const user = await usersService.getUser({ userId });
-    // console.log('user aqui', user)
 
     if (user && user.email === decodedToken.userEmail
       && user.roles.admin === decodedToken.userRol.admin) {

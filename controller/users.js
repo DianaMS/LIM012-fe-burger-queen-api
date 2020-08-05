@@ -60,7 +60,8 @@ module.exports = {
         }
       }
 
-      if (userObject._id.toString() !== decodedtoken.userId.toString() && !decodedtoken.userRol.admin) {
+      if (userObject._id.toString() !== decodedtoken.userId.toString()
+        && !decodedtoken.userRol.admin) {
         return next(403);
       }
 
@@ -128,6 +129,10 @@ module.exports = {
         return next(403);
       }
 
+      if (!user.email && !user.password && !user.roles) {
+        return next(400);
+      }
+
       if (user.email) {
         if (!validateEmail(user.email)) {
           return next(400);
@@ -181,7 +186,7 @@ module.exports = {
           return next(404);
         }
       }
-      console.log('userObject', userObject)
+
       if (userObject._id.toString() !== decodedtoken.userId && !decodedtoken.userRol.admin) {
         return next(403);
       }
