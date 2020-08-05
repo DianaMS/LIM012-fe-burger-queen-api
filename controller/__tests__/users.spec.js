@@ -335,7 +335,6 @@ describe('putProduct', () => {
 });
 
 describe('deleteUser', () => {
-
   it('Debería eliminar un producto con ._id existente', async () => {
     const req = {
       body: {
@@ -389,7 +388,7 @@ describe('deleteUser', () => {
     const reqGet = {
       params: { userId: result._id },
     };
-    const result2 = await getUser(reqGet, resp, next)
+    const result2 = await getUser(reqGet, resp, next);
     expect(result2).toBe(404);
   });
 });
@@ -409,14 +408,15 @@ describe('getUsers', () => {
     const reqGet = {
       query: {
         page: 1,
-        limit: 1,
+        limit: 14,
       },
       protocol: 'http',
       path: '/products',
       get: () => 'localhost:8080',
     };
     const result = await getUsers(reqGet, resp, next);
-    expect(result.length).toBe(1);
-    expect(result[0].email).toBe('diana@gmail.com');
+
+    expect(result.length).toBe(14);
+    expect(result.filter((user) => user.email === 'diana@gmail.com')[0].email).toBe('diana@gmail.com');
   });
 });

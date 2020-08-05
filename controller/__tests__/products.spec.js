@@ -171,16 +171,18 @@ describe('getProducts', () => {
     await postProduct(reqProduct, resp, next);
     const req = {
       query: {
-        page: 4,
-        limit: 1,
+        page: 1,
+        limit: 10,
       },
       protocol: 'http',
       path: '/products',
       get: () => 'localhost:8080',
     };
     const result = await getProducts(req, resp, next);
-    expect(result.length).toBe(1);
-    expect(result[0].price).toBe(15);
-    expect(result[0].name).toBe('hamburguesa');
+    const productTest = result.filter((product) => product.name === 'hamburguesa')[0];
+
+    expect(result.length).toBe(5);
+    expect(productTest.price).toBe(15);
+    expect(productTest.name).toBe('hamburguesa');
   });
 });

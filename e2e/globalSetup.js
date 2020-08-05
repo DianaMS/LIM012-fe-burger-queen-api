@@ -2,6 +2,7 @@ const path = require('path');
 const { spawn } = require('child_process');
 const nodeFetch = require('node-fetch');
 const kill = require('tree-kill');
+// eslint-disable-next-line import/no-unresolved
 const mongoSetup = require('@shelf/jest-mongodb/setup');
 const MongodbMemoryServer = require('mongodb-memory-server').default;
 
