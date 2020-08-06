@@ -25,16 +25,14 @@ module.exports = (app, nextMain) => {
     if (!email || !password) {
       return next(400);
     }
-    console.log('email', email)
-    console.log('password', password)
+
     const usersService = new UsersService();
     const userAuth = await usersService.getUserByEmail({ email });
-    console.log('userAuth', userAuth)
+
     if (userAuth && bcrypt.compareSync(req.body.password, userAuth.password)) {
       const userId = userAuth._id;
       const userEmail = userAuth.email;
       const userRol = userAuth.roles;
-      console.log('userRol', userRol)
 
       const token = jwt.sign({ userId, userEmail, userRol }, secret, {
         expiresIn: 60 * 60 * 24,

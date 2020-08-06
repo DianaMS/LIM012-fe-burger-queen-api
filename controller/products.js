@@ -98,8 +98,6 @@ module.exports = {
 
   deleteProduct: async (req, resp, next) => {
     const { productId } = req.params;
-    const { body: product } = req;
-    product.dateEntry = new Date();
 
     const checkProduct = await productsService.getProduct({ productId });
     if (!checkProduct) {
@@ -110,11 +108,11 @@ module.exports = {
       const productDelete = await productsService.deleteProduct({ productId });
       return resp.status(200).json({
         _id: productDelete,
-        name: product.name,
-        price: product.price,
-        image: product.image,
-        type: product.type,
-        dateEntry: product.dateEntry,
+        name: checkProduct.name,
+        price: checkProduct.price,
+        image: checkProduct.image,
+        type: checkProduct.type,
+        dateEntry: checkProduct.dateEntry,
         message: 'product delete',
       });
     } catch (error) {

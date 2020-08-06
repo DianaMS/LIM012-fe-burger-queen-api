@@ -37,7 +37,7 @@ module.exports = {
 
         const productsAndQuantity = orderedProducts.map((product) => {
           const productFilter = productsArray
-            .filter((element) => element.productId === product._id.toString());
+            .filter((element) => element.productId.toString() === product._id.toString());
           return {
             product,
             qty: productFilter[0].qty,
@@ -69,7 +69,7 @@ module.exports = {
     try {
       const order = await ordersService.getOrder({ orderId });
       if (order === null) {
-        next(404);
+        return next(404);
       }
 
       const productsArray = order.products;
@@ -85,7 +85,8 @@ module.exports = {
 
       const productsAndQuantity = orderedProducts.map((product) => {
         const productFilter = productsArray
-          .filter((element) => element.productId === product._id.toString());
+          .filter((element) => element.productId.toString() === product._id.toString());
+
         return {
           product,
           qty: productFilter[0].qty,
@@ -174,12 +175,11 @@ module.exports = {
 
     try {
       const validateOrderId = await ordersService.getOrder({ orderId });
-
       if (validateOrderId === null) {
         return next(404);
       }
 
-      if(!order.userId && !order.client && !order.products && !order.status) {
+      if (!order.userId && !order.client && !order.products && !order.status) {
         return next(400);
       }
 
@@ -231,7 +231,7 @@ module.exports = {
 
       const productsAndQuantity = orderedProducts.map((product) => {
         const productFilter = objectUpdateOrder.products
-          .filter((element) => element.productId === product._id.toString());
+          .filter((element) => element.productId.toString() === product._id.toString());
 
         return {
           product,
@@ -276,7 +276,7 @@ module.exports = {
 
       const productsAndQuantity = orderedProducts.map((product) => {
         const productFilter = productsArray
-          .filter((element) => element.productId === product._id.toString());
+          .filter((element) => element.productId.toString() === product._id.toString());
         return {
           product,
           qty: productFilter[0].qty,

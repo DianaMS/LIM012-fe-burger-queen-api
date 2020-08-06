@@ -1,5 +1,8 @@
 const { MongoClient, ObjectId } = require('mongodb');
 
+// Disable warming messages of mongoclient
+console.warn = () => false;
+
 class MongoLib {
   constructor(dbName, dbUrl) {
     this.conectionCliente = new MongoClient(dbUrl, {
@@ -19,40 +22,70 @@ class MongoLib {
   }
 
   getForPagination(collection, skip, limit) {
-    return this.conection().then((db) => db.collection(collection)
-      .find().skip(skip).limit(limit)
-      .toArray());
+    return this.conection().then((db) => {
+      const result = db.collection(collection)
+        .find().skip(skip).limit(limit)
+        .toArray();
+      // this.conectionCliente.connect.close();
+
+      return result;
+    });
   }
 
   getAll(collection) {
-    return this.conection().then((db) => db.collection(collection).find().toArray());
+    return this.conection().then((db) => {
+      const result = db.collection(collection).find().toArray();
+      // this.conectionCliente.connect.close();
+      return result;
+    });
   }
 
   getOne(collection, id) {
-    return this.conection().then((db) => db.collection(collection).findOne({ _id: ObjectId(id) }));
+    return this.conection().then((db) => {
+      const result = db.collection(collection).findOne({ _id: ObjectId(id) });
+      // this.conectionCliente.connect.close();
+
+      return result;
+    });
   }
 
   getUserByEmail(collection, emailUser) {
-    return this.conection().then((db) => db.collection(collection)
-      .findOne({ email: emailUser }));
+    return this.conection().then((db) => {
+      const result = db.collection(collection)
+        .findOne({ email: emailUser });
+
+      // this.conectionCliente.connect.close();
+      return result;
+    });
   }
 
   create(collection, data) {
-    return this.conection().then((db) => db.collection(collection).insertOne(data))
+    return this.conection().then((db) => {
+      const result = db.collection(collection).insertOne(data);
+      // this.conectionCliente.connect.close();
+      return result;
+    })
       .then((result) => result.insertedId);
   }
 
   update(collection, id, data) {
-    return this.conection().then((db) => db.collection(collection)
-      .updateOne({ _id: ObjectId(id) }, { $set: data }, { upsert: true }))
+    return this.conection().then((db) => {
+      const result = db.collection(collection)
+        .updateOne({ _id: ObjectId(id) }, { $set: data }, { upsert: true });
+      // this.conectionCliente.connect.close();
+      return result;
+    })
       .then((result) => result.upserttedId || id);
   }
 
   delete(collection, id) {
-    return this.conection().then((db) => db.collection(collection)
-      .deleteOne({ _id: ObjectId(id) }))
+    return this.conection().then((db) => {
+      const result = db.collection(collection)
+        .deleteOne({ _id: ObjectId(id) });
+      // this.conectionCliente.connect.close();
+      return result;
+    })
       .then(() => id);
   }
 }
-
 module.exports = MongoLib;

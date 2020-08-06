@@ -7,6 +7,37 @@ const {
 } = require('../products');
 const { resp, next } = require('./utils/parameters');
 
+let connection;
+let db;
+
+const clearData = async () => {
+  const req = {
+    query: {
+      page: 1,
+      limit: 60,
+    },
+    protocol: 'http',
+    path: '/products',
+    get: () => 'localhost:8080',
+  };
+  const products = await getProducts(req, resp, next);
+
+  for (let i = 0; i < products.length; i += 1) {
+    const id = {
+      params: {
+        productId: products[i]._id.toString(),
+      },
+    };
+
+    // eslint-disable-next-line no-await-in-loop
+    await deleteProduct(id, resp, next);
+  }
+
+  const products2 = await getProducts(req, resp, next);
+  console.log('°°°°°°°°°°°°°°°°°', products);
+  console.log('°°°°°°°°°°°°°°°°°', products2);
+};
+
 describe('postProduct', () => {
   it('Debería crear un producto al indicar nombre y precio', async () => {
     const req = {
@@ -162,6 +193,7 @@ describe('deleteProduct', () => {
 
 describe('getProducts', () => {
   it('Debería obtener todos los productos', async () => {
+    await clearData();
     const reqProduct = {
       body: {
         name: 'hamburguesa',
@@ -179,10 +211,14 @@ describe('getProducts', () => {
       get: () => 'localhost:8080',
     };
     const result = await getProducts(req, resp, next);
-    const productTest = result.filter((product) => product.name === 'hamburguesa')[0];
+    console.log('>>>>>>', result);
 
-    expect(result.length).toBe(5);
-    expect(productTest.price).toBe(15);
-    expect(productTest.name).toBe('hamburguesa');
+    expect(result.length).toBe(1);
+    expect(result[0].price).toBe(15);
+    expect(result[0].name).toBe('hamburguesa');
+  });
+
+  afterAll(async () => {
+    await connection.close();
   });
 });
