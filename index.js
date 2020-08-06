@@ -4,6 +4,11 @@ const authMiddleware = require('./middleware/auth');
 const errorHandler = require('./middleware/error');
 const routes = require('./routes');
 const pkg = require('./package.json');
+const MongoLib = require('./db-data/mongoLib');
+
+const { dbName, dbUrl } = config;
+
+const mongo = new MongoLib(dbName, dbUrl);
 
 const {
   port, secret,
@@ -30,3 +35,6 @@ routes(app, (err) => {
     console.info(`App listening on port ${port}`);
   });
 });
+
+process.on('SIGINT', mongo.disconnect);
+process.on('SIGTERM', mongo.disconnect);
