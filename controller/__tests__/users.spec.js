@@ -7,6 +7,34 @@ const {
 } = require('../../controller/users');
 const { resp, next } = require('./utils/parameters');
 
+const clearData = async () => {
+  const reqGet = {
+    query: {
+      page: 1,
+      limit: 50,
+    },
+    protocol: 'http',
+    path: '/users',
+    get: () => 'localhost:8080',
+  };
+  const users = await getUsers(reqGet, resp, next);
+
+  for (let i = 0; i < users.length; i += 1) {
+    const id = {
+      params: {
+        userId: users[i]._id,
+      },
+      userDecoded: {
+        userId: users[i]._id.toString(),
+        userEmail: users[i].email,
+        userRol: users[i].roles,
+      },
+    };
+    // eslint-disable-next-line no-await-in-loop
+    await deleteUser(id, resp, next);
+  }
+};
+
 describe('postUser', () => {
   it('Debería crear un usuario al indicar email y password', async () => {
     const req = {
@@ -395,6 +423,7 @@ describe('deleteUser', () => {
 
 describe('getUsers', () => {
   it('Debería obtener todos los usuarios', async () => {
+    await clearData();
     const req = {
       body: {
         email: 'naranja@gmail.com',
@@ -411,12 +440,11 @@ describe('getUsers', () => {
         limit: 14,
       },
       protocol: 'http',
-      path: '/products',
+      path: '/users',
       get: () => 'localhost:8080',
     };
     const result = await getUsers(reqGet, resp, next);
-
-    expect(result.length).toBe(14);
-    expect(result.filter((user) => user.email === 'diana@gmail.com')[0].email).toBe('diana@gmail.com');
+    expect(result.length).toBe(1);
+    expect(result[0].email).toBe('naranja@gmail.com');
   });
 });
