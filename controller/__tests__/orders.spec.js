@@ -339,7 +339,7 @@ describe('deleteOrders', () => {
 });
 
 describe('getOrders', () => {
-  it('Debería obtener todos los usuarios', async () => {
+  it('Debería obtener todas las ordenes', async () => {
     await clearData();
     const user = {
       body: {

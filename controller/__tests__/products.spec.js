@@ -7,9 +7,6 @@ const {
 } = require('../products');
 const { resp, next } = require('./utils/parameters');
 
-let connection;
-let db;
-
 const clearData = async () => {
   const req = {
     query: {
@@ -33,9 +30,7 @@ const clearData = async () => {
     await deleteProduct(id, resp, next);
   }
 
-  const products2 = await getProducts(req, resp, next);
-  console.log('°°°°°°°°°°°°°°°°°', products);
-  console.log('°°°°°°°°°°°°°°°°°', products2);
+  await getProducts(req, resp, next);
 };
 
 describe('postProduct', () => {
@@ -211,7 +206,6 @@ describe('getProducts', () => {
       get: () => 'localhost:8080',
     };
     const result = await getProducts(req, resp, next);
-    console.log('>>>>>>', result);
 
     expect(result.length).toBe(1);
     expect(result[0].price).toBe(15);
@@ -219,6 +213,6 @@ describe('getProducts', () => {
   });
 
   afterAll(async () => {
-    await connection.close();
+    // await connection.close();
   });
 });
