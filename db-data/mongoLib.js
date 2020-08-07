@@ -7,6 +7,8 @@ let INSTANCE_MONGODB = null;
 
 class MongoLib {
   constructor(dbName, dbUrl) {
+    console.log('>>>>>', dbUrl);
+    console.log('>>>>>', dbName);
     this.conectionCliente = new MongoClient(dbUrl, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
