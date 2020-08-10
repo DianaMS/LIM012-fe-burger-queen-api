@@ -1,57 +1,119 @@
 const { MongoClient, ObjectId } = require('mongodb');
 
+// Disable warming messages of mongoclient
+console.warn = () => false;
+
+let INSTANCE_MONGODB = null;
+
 class MongoLib {
   constructor(dbName, dbUrl) {
+    console.log('>>>>>', dbUrl);
+    console.log('>>>>>', dbName);
     this.conectionCliente = new MongoClient(dbUrl, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });
     this.dbName = dbName;
+    this.instance = INSTANCE_MONGODB;
+    this.db = INSTANCE_MONGODB ? INSTANCE_MONGODB.db(dbName) : null;
   }
 
-  conection() {
-    return new Promise((res, rej) => {
-      this.conectionCliente.connect((error) => {
-        // eslint-disable-next-line no-unused-expressions
-        (error) ? rej(error) : res(this.conectionCliente.db(this.dbName));
-      });
-    });
+  async conection() {
+    try {
+      const clientConnected = await this.conectionCliente.connect();
+      this.instance = clientConnected;
+      INSTANCE_MONGODB = clientConnected;
+
+      // eslint-disable-next-line no-console
+      console.log('base de datos conectada!!!');
+      return true;
+    } catch (err) {
+      throw new Error(err);
+    }
   }
 
-  getForPagination(collection, skip, limit) {
-    return this.conection().then((db) => db.collection(collection)
-      .find().skip(skip).limit(limit)
-      .toArray());
+  async disconnect() {
+    try {
+      // eslint-disable-next-line no-console
+      console.log('desconectando BD');
+      if (INSTANCE_MONGODB) this.instance = INSTANCE_MONGODB;
+      if (this.instance) await this.instance.close();
+    } catch (err) {
+      return new Error(err);
+    }
   }
 
-  getAll(collection) {
-    return this.conection().then((db) => db.collection(collection).find().toArray());
+  async getForPagination(collection, skip, limit) {
+    await this.comprobeConnection();
+
+    const { instance, dbName } = this;
+
+    return instance.db(dbName)
+      .collection(collection)
+      .find()
+      .skip(skip)
+      .limit(limit)
+      .toArray();
   }
 
-  getOne(collection, id) {
-    return this.conection().then((db) => db.collection(collection).findOne({ _id: ObjectId(id) }));
+  async getAll(collection) {
+    await this.comprobeConnection();
+
+    const { instance, dbName } = this;
+
+    return instance.db(dbName).collection(collection).find().toArray();
   }
 
-  getUserByEmail(collection, emailUser) {
-    return this.conection().then((db) => db.collection(collection)
-      .findOne({ email: emailUser }));
+  async getOne(collection, id) {
+    await this.comprobeConnection();
+
+    const { instance, dbName } = this;
+
+    return instance.db(dbName).collection(collection).findOne({ _id: ObjectId(id) });
   }
 
-  create(collection, data) {
-    return this.conection().then((db) => db.collection(collection).insertOne(data))
+  async getUserByEmail(collection, emailUser) {
+    await this.comprobeConnection();
+
+    const { instance, dbName } = this;
+
+    return instance.db(dbName).collection(collection).findOne({ email: emailUser });
+  }
+
+  async create(collection, data) {
+    await this.comprobeConnection();
+
+    const { instance, dbName } = this;
+
+    return instance.db(dbName).collection(collection).insertOne(data)
       .then((result) => result.insertedId);
   }
 
-  update(collection, id, data) {
-    return this.conection().then((db) => db.collection(collection)
-      .updateOne({ _id: ObjectId(id) }, { $set: data }, { upsert: true }))
+  async update(collection, id, data) {
+    await this.comprobeConnection();
+
+    const { instance, dbName } = this;
+
+    return instance.db(dbName).collection(collection)
+      .updateOne({ _id: ObjectId(id) }, { $set: data }, { upsert: true })
       .then((result) => result.upserttedId || id);
   }
 
-  delete(collection, id) {
-    return this.conection().then((db) => db.collection(collection)
-      .deleteOne({ _id: ObjectId(id) }))
-      .then(() => id);
+  async delete(collection, id) {
+    await this.comprobeConnection();
+    const { instance, dbName } = this;
+
+    return instance.db(dbName).collection(collection)
+      .deleteOne({ _id: ObjectId(id) }).then(() => id);
+  }
+
+  async comprobeConnection() {
+    if (!this.instance && INSTANCE_MONGODB) {
+      this.instance = INSTANCE_MONGODB;
+    }
+    if (!this.instance && !INSTANCE_MONGODB) {
+      await this.conection();
+    }
   }
 }
 

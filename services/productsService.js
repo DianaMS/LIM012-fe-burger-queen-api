@@ -32,8 +32,6 @@ class ProductsService {
 
   async createProduct({ product }) {
     const createProductId = await this.mongoDB.create(this.collection, product);
-    console.log(createProductId)
-    console.log('url', dbUrl)
     return createProductId;
   }
 

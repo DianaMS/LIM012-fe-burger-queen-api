@@ -37,7 +37,7 @@ module.exports = {
 
         const productsAndQuantity = orderedProducts.map((product) => {
           const productFilter = productsArray
-            .filter((element) => element.productId === product._id.toString());
+            .filter((element) => element.productId.toString() === product._id.toString());
           return {
             product,
             qty: productFilter[0].qty,
@@ -69,7 +69,7 @@ module.exports = {
     try {
       const order = await ordersService.getOrder({ orderId });
       if (order === null) {
-        next(404);
+        return next(404);
       }
 
       const productsArray = order.products;
@@ -85,7 +85,8 @@ module.exports = {
 
       const productsAndQuantity = orderedProducts.map((product) => {
         const productFilter = productsArray
-          .filter((element) => element.productId === product._id.toString());
+          .filter((element) => element.productId.toString() === product._id.toString());
+
         return {
           product,
           qty: productFilter[0].qty,
@@ -108,14 +109,14 @@ module.exports = {
 
   postOrder: async (req, resp, next) => {
     const { body: order } = req;
+    const decodedtoken = req.userDecoded;
     const { userId } = order;
     const productsArray = order.products;
     const orderedProducts = [];
-
     try {
       const objectUserId = await usersService.getUser({ userId });
 
-      if (!objectUserId || objectUserId === null || productsArray.length <= 0 || !order.client) {
+      if (!objectUserId || objectUserId === null || productsArray.length <= 0) {
         return next(400);
       }
 
@@ -129,32 +130,38 @@ module.exports = {
         orderedProducts.push(objectProduct);
       }
 
+      if (!order.client) {
+        order.client = '';
+      }
       order.status = 'pending';
       order.dateEntry = new Date();
       order.dateProcessed = '';
-      const orderId = await ordersService.createOrder({ order });
-      const createOrderObject = await ordersService.getOrder({ orderId });
 
-      const productsAndQuantity = orderedProducts.map((product) => {
-        const productFilter = createOrderObject.products
-          .filter((element) => element.productId === product._id.toString());
+      if (decodedtoken.userRol.admin || decodedtoken.userRol) {
+        const orderId = await ordersService.createOrder({ order });
+        const createOrderObject = await ordersService.getOrder({ orderId });
 
-        return {
-          product,
-          qty: productFilter[0].qty,
-        };
-      });
+        const productsAndQuantity = orderedProducts.map((product) => {
+          const productFilter = createOrderObject.products
+            .filter((element) => element.productId.toString() === product._id.toString());
 
-      return resp.status(200).json({
-        _id: orderId.toString(),
-        userId: createOrderObject.userId,
-        client: createOrderObject.client,
-        products: productsAndQuantity,
-        status: createOrderObject.status,
-        dateEntry: createOrderObject.dateEntry,
-        dateProcessed: createOrderObject.dateProcessed,
-        message: 'order created',
-      });
+          return {
+            product,
+            qty: productFilter[0].qty,
+          };
+        });
+
+        return resp.status(200).json({
+          _id: orderId.toString(),
+          userId: createOrderObject.userId,
+          client: createOrderObject.client,
+          products: productsAndQuantity,
+          status: createOrderObject.status,
+          dateEntry: createOrderObject.dateEntry,
+          dateProcessed: createOrderObject.dateProcessed,
+          message: 'order created',
+        });
+      }
     } catch (error) {
       return next(error);
     }
@@ -164,23 +171,51 @@ module.exports = {
     const { orderId } = req.params;
     const { body: order } = req;
     const { userId } = order;
-    const productsArray = order.products;
     const orderedProducts = [];
-    const orderStatus = order.status;
 
     try {
-      const objectUser = await usersService.getUser({ userId });
-      if (!objectUser || objectUser === null || productsArray.length <= 0) {
+      const validateOrderId = await ordersService.getOrder({ orderId });
+      if (validateOrderId === null) {
+        return next(404);
+      }
+
+      if (!order.userId && !order.client && !order.products && !order.status) {
         return next(400);
       }
 
-      if (orderStatus !== 'pending' && orderStatus !== 'canceled'
-          && orderStatus !== 'delivering' && orderStatus !== 'delivered' && orderStatus !== 'preparing') {
-        return next(400);
+      if (order.userId) {
+        const objectUser = await usersService.getUser({ userId });
+        if (!objectUser || objectUser === null) {
+          return next(400);
+        }
+        validateOrderId.userId = order.userId;
       }
 
-      for (let i = 0; i < productsArray.length; i += 1) {
-        const { productId } = productsArray[i];
+      if (order.client) {
+        validateOrderId.client = order.client;
+      }
+
+      if (order.products) {
+        const productsArray = order.products;
+        if (productsArray.length <= 0) {
+          return next(400);
+        }
+
+        validateOrderId.products = productsArray;
+      }
+
+      if (order.status) {
+        const orderStatus = order.status;
+        if (orderStatus !== 'pending' && orderStatus !== 'canceled'
+            && orderStatus !== 'delivering' && orderStatus !== 'delivered' && orderStatus !== 'preparing') {
+          return next(400);
+        }
+        validateOrderId.status = order.status;
+      }
+
+      const productsArrayOrders = validateOrderId.products;
+      for (let i = 0; i < productsArrayOrders.length; i += 1) {
+        const { productId } = productsArrayOrders[i];
         // eslint-disable-next-line no-await-in-loop
         const objectProduct = await productsService.getProduct({ productId });
         if (objectProduct === null) {
@@ -189,18 +224,14 @@ module.exports = {
         orderedProducts.push(objectProduct);
       }
 
-      const validateOrderId = await ordersService.getOrder({ orderId });
-      if (validateOrderId === null) {
-        return next(404);
-      }
-
       order.dateProcessed = new Date();
-      await ordersService.updateOrder({ orderId, order });
+      validateOrderId.dateProcessed = order.dateProcessed;
+      await ordersService.updateOrder({ orderId, order: validateOrderId });
       const objectUpdateOrder = await ordersService.getOrder({ orderId });
 
       const productsAndQuantity = orderedProducts.map((product) => {
         const productFilter = objectUpdateOrder.products
-          .filter((element) => element.productId === product._id.toString());
+          .filter((element) => element.productId.toString() === product._id.toString());
 
         return {
           product,
@@ -234,8 +265,6 @@ module.exports = {
 
       const productsArray = orderObject.products;
 
-      // const productDetailsAndQuantity = await productDetails(productsArray, next(400));
-      // console.log(productDetailsAndQuantity);
       const orderedProducts = [];
 
       for (let i = 0; i < productsArray.length; i += 1) {
@@ -247,7 +276,7 @@ module.exports = {
 
       const productsAndQuantity = orderedProducts.map((product) => {
         const productFilter = productsArray
-          .filter((element) => element.productId === product._id.toString());
+          .filter((element) => element.productId.toString() === product._id.toString());
         return {
           product,
           qty: productFilter[0].qty,

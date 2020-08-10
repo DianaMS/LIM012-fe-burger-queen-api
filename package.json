@@ -14,7 +14,7 @@
     "start": "node index.js",
     "dev": "nodemon index.js",
     "test:e2e": "jest --verbose --testPathPattern e2e --globalSetup ./e2e/globalSetup --globalTeardown ./e2e/globalTeardown --runInBand",
-    "test:unit": "jest --verbose --testPathIgnorePatterns e2e",
+    "test:unit": "jest  --verbose --testPathIgnorePatterns e2e utils",
     "test": "npm run test:e2e && npm run test:unit",
     "lint": "eslint .",
     "docs:generate": "jsdoc -c jsdoc.conf --readme README-docs.md",
@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "@shelf/jest-mongodb": "^1.2.1",
-    "bcrypt": "^3.0.8",
+    "bcrypt": "^5.0.0",
     "body-parser": "1.19.0",
     "dotenv": "^8.2.0",
     "express": "4.17.1",
