@@ -79,23 +79,23 @@ Nuestra aplicación usa las siguientes variables de entorno:
 * `ADMIN_PASSWORD`: Si hemos especificado un `ADMIN_EMAIL`, debemos pasar
   también una contraseña para el usuario admin. Valor por defecto: `changeme`.
 
-### Deployment
-
-Nuestra clienta nos ha manifestado que su equipo de _devops_ está siempre con muchas
-tareas, por por lo que nos pide como requerimiento que la aplicación esté configurada
-con `docker-compose` para que pueda ser desplegada sin dificultades en cualquier
-entorno.
-
-El _boilerplate_ ya cuenta con una configuración incial de `docker-compose` para
-la aplicación de node, tu tarea será extender esa configuración para incluir la
-configuración de base de datos que hayas elegido.
-Ten en cuenta que como vas a tener dos servidores corriendo sobre una misma
-configuración, deberás exponer los servicios en diferentes puertos.
-
-Una vez que tengas tu configuración de `docker-compose`, deberás crear un servidor
-en la nube (VPS) (en el área de recursos te proponemos algunas alternativas de
-proveedores), acceder a él a través de `ssh`, clonar tu repositorio y ejecutar
-`docker-compose up` para levantar la aplicación y la documentación, para que
-queden online y accesibles.
 
 ***
+
+
+### Deployment
+
+La aplicación está configurada con `docker-compose` para que pueda ser desplegada sin dificultades en cualquier entorno, al tener dos servidores corriend sobre una misma configuración, se expone los servicios
+en diferentes puertos.
+
+Se crea lun servidor en la nube (VPS), se accede a través del `ssh`, clonar repositorio y ejecutar
+`docker-compose up` para levantar la aplicación, y quedan online y accesible.
+
+* Heroku:
+  - https://appi-burger-queen-client.herokuapp.com/
+
+* AWS:
+  - IPv4 Public IP : 18.191.176.140
+  - Public DNS (IPv4) : ec2-18-191-176-140.us-east-2.compute.amazonaws.com
+
+
