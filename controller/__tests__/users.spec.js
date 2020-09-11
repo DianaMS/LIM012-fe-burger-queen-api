@@ -4,7 +4,7 @@ const {
   putUser,
   deleteUser,
   getUsers,
-} = require('../../controller/users');
+} = require('../users');
 const { resp, next } = require('./utils/parameters');
 
 const clearData = async () => {
