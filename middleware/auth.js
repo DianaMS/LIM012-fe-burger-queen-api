@@ -38,7 +38,6 @@ module.exports.isAuthenticated = (req) => {
   return false;
 };
 
-
 module.exports.isAdmin = (req) => {
   if (req.userDecoded.userRol.admin) {
     return true;
